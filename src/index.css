@@ -1,26 +1,133 @@
-/* index.css */
-/* Global styles used throughout the RenewTrack application */
+/* =========================================================
+   RENEWTRACK - GLOBAL STYLES
+   ========================================================= */
 
-/* Remove the browser's default spacing */
+/* Apply box-sizing to every element.
+   This makes width and padding calculations easier to manage. */
 * {
   box-sizing: border-box;
 }
 
-/* Style the whole page */
+/* Remove the browser's default margin and set our main font. */
 body {
   margin: 0;
-
-  /* Use a simple, readable font */
-  font-family: Arial, sans-serif;
-
-  /* Temporary background colour */
+  font-family: Arial, Helvetica, sans-serif;
   background-color: #f5f7fa;
-
-  /* Default text colour */
-  color: #222;
+  color: #1f2937;
 }
 
-/* Remove default spacing from the root React container */
+/* Make sure the React application can fill the whole screen. */
 #root {
   min-height: 100vh;
+}
+
+
+/* =========================================================
+   MAIN APPLICATION LAYOUT
+   ========================================================= */
+
+/* app-layout contains:
+   1. Sidebar
+   2. Main page content
+
+   display: flex places them side-by-side.
+*/
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+
+/* =========================================================
+   SIDEBAR
+   ========================================================= */
+
+/* Style the <aside> element used by Sidebar.jsx. */
+aside {
+  width: 240px;
+  min-height: 100vh;
+  padding: 24px 20px;
+
+  background-color: #1f2937;
+  color: white;
+}
+
+/* RenewTrack application name */
+aside h2 {
+  margin: 0;
+  font-size: 24px;
+}
+
+/* Small subtitle under RenewTrack */
+aside p {
+  margin-top: 6px;
+  margin-bottom: 32px;
+
+  font-size: 13px;
+  color: #cbd5e1;
+}
+
+
+/* =========================================================
+   SIDEBAR NAVIGATION
+   ========================================================= */
+
+/* Stack the navigation links vertically. */
+aside nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Style each React Router NavLink. */
+aside nav a {
+  padding: 12px 14px;
+
+  color: #e5e7eb;
+  text-decoration: none;
+
+  border-radius: 6px;
+
+  /* Makes the colour change smoother when hovering. */
+  transition: background-color 0.2s;
+}
+
+/* Change the background when the mouse is over a link. */
+aside nav a:hover {
+  background-color: #374151;
+}
+
+/* NavLink automatically adds the "active" class
+   when its route matches the current URL.
+
+   Example:
+   /customers -> Customers link becomes active.
+*/
+aside nav a.active {
+  background-color: #2563eb;
+  color: white;
+}
+
+
+/* =========================================================
+   PAGE CONTENT
+   ========================================================= */
+
+/* This is the area where <Outlet /> displays the current page. */
+.page-content {
+  flex: 1;
+  padding: 32px;
+}
+
+/* Style the main page heading. */
+.page-content h1 {
+  margin-top: 0;
+  margin-bottom: 8px;
+
+  font-size: 30px;
+}
+
+/* Basic paragraph styling inside the page area. */
+.page-content p {
+  color: #6b7280;
 }
