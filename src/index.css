@@ -1,0 +1,26 @@
+/* index.css */
+/* Global styles used throughout the RenewTrack application */
+
+/* Remove the browser's default spacing */
+* {
+  box-sizing: border-box;
+}
+
+/* Style the whole page */
+body {
+  margin: 0;
+
+  /* Use a simple, readable font */
+  font-family: Arial, sans-serif;
+
+  /* Temporary background colour */
+  background-color: #f5f7fa;
+
+  /* Default text colour */
+  color: #222;
+}
+
+/* Remove default spacing from the root React container */
+#root {
+  min-height: 100vh;
+}
