@@ -6,13 +6,27 @@
 // =========================================================
 
 import { useState } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+
+import {
+  useParams,
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
+// Import reusable contract validation functions.
+import {
+  validateContract,
+  hasValidationErrors,
+} from "../utils/validationUtils.js";
 
 // =========================================================
-// EDIT CONTRACT PAGE
+// EDIT CONTRACT PAGE COMPONENT
 // =========================================================
 
-// Receive contracts, customers, and updateContract from App.jsx.
+// Receive:
+// contracts      -> contract list from App.jsx
+// customers      -> customer list from App.jsx
+// updateContract -> function used to save contract changes
 function EditContractPage({
   contracts,
   customers,
@@ -25,7 +39,7 @@ function EditContractPage({
   // Example:
   // /contracts/abc123/edit
   //
-  // useParams always gives us the ID as a string.
+  // useParams gives us the ID as a string.
   const { contractId } = useParams();
 
   // Allows us to navigate after saving.
@@ -35,9 +49,8 @@ function EditContractPage({
   // FIND THE CONTRACT TO EDIT
   // =========================================================
 
-  // json-server can generate IDs containing letters.
-  //
-  // Therefore we compare IDs as strings.
+  // json-server can generate IDs containing letters,
+  // so compare both IDs as strings.
   const contract = contracts.find(
     (contract) =>
       String(contract.id) === String(contractId),
@@ -53,9 +66,16 @@ function EditContractPage({
     contractName: contract?.contractName || "",
     startDate: contract?.startDate || "",
     expiryDate: contract?.expiryDate || "",
-    value: contract?.value || "",
+    value: contract?.value ?? "",
     status: contract?.status || "Active",
   });
+
+  // =========================================================
+  // VALIDATION ERROR STATE
+  // =========================================================
+
+  // Store validation messages for individual fields.
+  const [errors, setErrors] = useState({});
 
   // =========================================================
   // HANDLE FORM INPUT CHANGES
@@ -69,35 +89,59 @@ function EditContractPage({
       ...previousFormData,
       [name]: value,
     }));
+
+    // Clear the current field's error when
+    // the user starts correcting the value.
+    setErrors((previousErrors) => ({
+      ...previousErrors,
+      [name]: "",
+    }));
   };
 
   // =========================================================
   // HANDLE FORM SUBMISSION
   // =========================================================
 
-  // async allows us to wait for the API request
-  // before returning to the Contracts page.
   const handleSubmit = async (event) => {
-    // Prevent browser refresh.
+    // Prevent the browser from refreshing.
     event.preventDefault();
+
+    // =======================================================
+    // VALIDATE FORM
+    // =======================================================
+
+    const validationErrors =
+      validateContract(formData);
+
+    // Store validation errors so React
+    // can display them underneath the fields.
+    setErrors(validationErrors);
+
+    // Stop here if validation failed.
+    if (hasValidationErrors(validationErrors)) {
+      return;
+    }
 
     // =======================================================
     // FIND THE SELECTED CUSTOMER
     // =======================================================
 
-    // Compare customer IDs as strings.
-    //
-    // Do NOT use Number() because json-server
-    // IDs can contain letters.
+    // Compare IDs as strings because json-server
+    // IDs may contain letters.
     const selectedCustomer = customers.find(
       (customer) =>
         String(customer.id) ===
         String(formData.customerId),
     );
 
-    // Safety check.
+    // Protect against a customer that no longer exists.
     if (!selectedCustomer) {
-      console.error("Selected customer was not found.");
+      setErrors((previousErrors) => ({
+        ...previousErrors,
+        customerId:
+          "The selected customer could not be found.",
+      }));
+
       return;
     }
 
@@ -106,22 +150,23 @@ function EditContractPage({
     // =======================================================
 
     const updatedContract = {
-      // Keep the existing json-server contract ID.
+      // Keep the existing contract ID.
       id: contractId,
 
-      // Keep the selected customer's json-server ID.
+      // Store the selected customer's ID.
       customerId: formData.customerId,
 
-      // Store the selected customer's company name
-      // for display on the Contracts page.
+      // Store the selected customer's company name.
       customer: selectedCustomer.companyName,
 
-      contractName: formData.contractName,
+      // Remove accidental spaces.
+      contractName: formData.contractName.trim(),
+
       startDate: formData.startDate,
       expiryDate: formData.expiryDate,
 
       // Number inputs return strings,
-      // so contract value should still be converted.
+      // so convert the value into a number.
       value: Number(formData.value),
 
       status: formData.status,
@@ -131,14 +176,11 @@ function EditContractPage({
     // SAVE THROUGH API
     // =======================================================
 
-    // updateContract() in App.jsx sends:
-    //
-    // PUT /contracts/:id
-    //
-    // Wait for the API request to finish.
+    // Wait for App.jsx to update the contract
+    // through json-server.
     await updateContract(updatedContract);
 
-    // Return to Contracts after saving.
+    // Return to Contracts after the update finishes.
     navigate("/contracts");
   };
 
@@ -146,14 +188,15 @@ function EditContractPage({
   // CONTRACT NOT FOUND
   // =========================================================
 
-  // If the URL contains an invalid contract ID,
-  // display a useful message instead of an empty form.
   if (!contract) {
     return (
       <main>
         <h1>Contract Not Found</h1>
 
-        <Link to="/contracts" className="back-link">
+        <Link
+          to="/contracts"
+          className="back-link"
+        >
           ← Back to Contracts
         </Link>
       </main>
@@ -174,7 +217,10 @@ function EditContractPage({
 
       <p>Editing Contract ID: {contractId}</p>
 
-      <Link to="/contracts" className="back-link">
+      <Link
+        to="/contracts"
+        className="back-link"
+      >
         ← Back to Contracts
       </Link>
 
@@ -185,22 +231,26 @@ function EditContractPage({
       <form
         className="contract-form"
         onSubmit={handleSubmit}
+        noValidate
       >
         {/* ===================================================
             CUSTOMER
             =================================================== */}
 
         <div className="form-group">
-          <label htmlFor="customerId">Customer</label>
+          <label htmlFor="customerId">
+            Customer
+          </label>
 
           <select
             id="customerId"
             name="customerId"
             value={formData.customerId}
             onChange={handleChange}
-            required
           >
-            <option value="">Select a customer</option>
+            <option value="">
+              Select a customer
+            </option>
 
             {customers.map((customer) => (
               <option
@@ -211,6 +261,12 @@ function EditContractPage({
               </option>
             ))}
           </select>
+
+          {errors.customerId && (
+            <p className="form-error">
+              {errors.customerId}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -228,8 +284,13 @@ function EditContractPage({
             name="contractName"
             value={formData.contractName}
             onChange={handleChange}
-            required
           />
+
+          {errors.contractName && (
+            <p className="form-error">
+              {errors.contractName}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -247,8 +308,13 @@ function EditContractPage({
             name="startDate"
             value={formData.startDate}
             onChange={handleChange}
-            required
           />
+
+          {errors.startDate && (
+            <p className="form-error">
+              {errors.startDate}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -266,8 +332,13 @@ function EditContractPage({
             name="expiryDate"
             value={formData.expiryDate}
             onChange={handleChange}
-            required
           />
+
+          {errors.expiryDate && (
+            <p className="form-error">
+              {errors.expiryDate}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -286,8 +357,13 @@ function EditContractPage({
             value={formData.value}
             onChange={handleChange}
             min="0"
-            required
           />
+
+          {errors.value && (
+            <p className="form-error">
+              {errors.value}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -317,6 +393,12 @@ function EditContractPage({
               Expired
             </option>
           </select>
+
+          {errors.status && (
+            <p className="form-error">
+              {errors.status}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -339,3 +421,4 @@ function EditContractPage({
 // =========================================================
 
 export default EditContractPage;
+

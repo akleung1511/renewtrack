@@ -1,27 +1,47 @@
 // NewCustomerPage.jsx
-// This page will allow the user to create a new customer.
+// This page allows the user to create a new customer.
 
-// Import useState so the page can remember
-// the values entered into the customer form.
+// =========================================================
+// IMPORTS
+// =========================================================
+
+// useState allows the page to store:
+// 1. Form values
+// 2. Validation errors
 import { useState } from "react";
 
 // Link provides navigation links.
 // useNavigate lets us navigate after adding a customer.
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
+// Import reusable customer validation functions.
+import {
+  validateCustomer,
+  hasValidationErrors,
+} from "../utils/validationUtils.js";
+
+// =========================================================
+// NEW CUSTOMER PAGE COMPONENT
+// =========================================================
 
 // Receive addCustomer from App.jsx through props.
 function NewCustomerPage({ addCustomer }) {
-  
   // =========================================================
-// NAVIGATION
-// =========================================================
+  // NAVIGATION
+  // =========================================================
 
-// Used to return to Customers after adding a customer.
-const navigate = useNavigate();
+  // Used to return to Customers after
+  // successfully adding a customer.
+  const navigate = useNavigate();
+
+  // =========================================================
   // FORM STATE
   // =========================================================
-  // formData stores all values entered
-  // into the Add Customer form.
+
+  // Store all values entered into the form.
   const [formData, setFormData] = useState({
     companyName: "",
     contactPerson: "",
@@ -30,46 +50,104 @@ const navigate = useNavigate();
   });
 
   // =========================================================
+  // VALIDATION ERROR STATE
+  // =========================================================
+
+  // Store validation messages for each field.
+  //
+  // Example:
+  //
+  // {
+  //   companyName: "Company name is required.",
+  //   email: "Please enter a valid email address."
+  // }
+  const [errors, setErrors] = useState({});
+
+  // =========================================================
   // HANDLE FORM INPUT CHANGES
   // =========================================================
 
-  // This function runs whenever the user changes a form field.
-  //
-  // event.target.name tells us WHICH input changed.
-  // event.target.value tells us WHAT the user entered.
   const handleChange = (event) => {
+    // name tells us which field changed.
+    // value tells us what the user entered.
     const { name, value } = event.target;
 
-    // Keep all existing form values,
-    // but update the field that changed.
+    // Update only the field that changed.
     setFormData((previousFormData) => ({
       ...previousFormData,
       [name]: value,
     }));
-  };
-// =========================================================
-// HANDLE FORM SUBMISSION
-// =========================================================
 
-// This function runs when the user clicks Add Customer.
-const handleSubmit = (event) => {
-  // Prevent the browser from refreshing.
-  event.preventDefault();
-
-  // Create a new customer object using the form values.
-  const newCustomer = {
-    companyName: formData.companyName,
-    contactPerson: formData.contactPerson,
-    email: formData.email,
-    phone: formData.phone,
+    // Clear the validation error for this field
+    // when the user starts correcting it.
+    setErrors((previousErrors) => ({
+      ...previousErrors,
+      [name]: "",
+    }));
   };
 
-  // Send the new customer to App.jsx.
-  addCustomer(newCustomer);
+  // =========================================================
+  // HANDLE FORM SUBMISSION
+  // =========================================================
 
-  // Return to the Customers page.
-  navigate("/customers");
-};
+  // async allows us to wait for the API request
+  // before navigating away.
+  const handleSubmit = async (event) => {
+    // Prevent the browser from refreshing.
+    event.preventDefault();
+
+    // =======================================================
+    // VALIDATE FORM
+    // =======================================================
+
+    // Send the current form values to our
+    // reusable validation function.
+    const validationErrors =
+      validateCustomer(formData);
+
+    // Store any validation errors so that
+    // they can be displayed on the page.
+    setErrors(validationErrors);
+
+    // If validation failed, stop here.
+    //
+    // The customer will NOT be sent to the API.
+    if (hasValidationErrors(validationErrors)) {
+      return;
+    }
+
+    // =======================================================
+    // CREATE NEW CUSTOMER
+    // =======================================================
+
+    // Build the customer object that will
+    // be sent to App.jsx.
+    const newCustomer = {
+      // trim() removes accidental spaces
+      // from the beginning and end.
+      companyName: formData.companyName.trim(),
+      contactPerson:
+        formData.contactPerson.trim(),
+      email: formData.email.trim(),
+      phone: formData.phone.trim(),
+    };
+
+    // =======================================================
+    // SAVE CUSTOMER
+    // =======================================================
+
+    // Send the new customer to App.jsx.
+    //
+    // App.jsx will POST the customer to json-server.
+    await addCustomer(newCustomer);
+
+    // Only navigate after the API request has finished.
+    navigate("/customers");
+  };
+
+  // =========================================================
+  // DISPLAY PAGE
+  // =========================================================
 
   return (
     <main>
@@ -79,94 +157,144 @@ const handleSubmit = (event) => {
 
       <h1>Add Customer</h1>
 
-      <p>Create a new customer record in RenewTrack.</p>
+      <p>
+        Create a new customer record in RenewTrack.
+      </p>
 
-      {/* Return to the Customers page. */}
-      <Link to="/customers" className="back-link">
+      <Link
+        to="/customers"
+        className="back-link"
+      >
         ← Back to Customers
       </Link>
 
-     {/* =====================================================
-    ADD CUSTOMER FORM
-    ===================================================== */}
+      {/* =====================================================
+          ADD CUSTOMER FORM
+          ===================================================== */}
 
-<form
-  className="contract-form"
-  onSubmit={handleSubmit}
->
+      <form
+        className="contract-form"
+        onSubmit={handleSubmit}
+        noValidate
+      >
+        {/* ===================================================
+            COMPANY NAME
+            =================================================== */}
 
-  {/* Company Name */}
-  <div className="form-group">
-    <label htmlFor="companyName">Company Name</label>
+        <div className="form-group">
+          <label htmlFor="companyName">
+            Company Name
+          </label>
 
-    <input
-      type="text"
-      id="companyName"
-      name="companyName"
-      value={formData.companyName}
-      onChange={handleChange}
-      placeholder="e.g. ABC Pte Ltd"
-    />
-  </div>
+          <input
+            type="text"
+            id="companyName"
+            name="companyName"
+            value={formData.companyName}
+            onChange={handleChange}
+            placeholder="e.g. ABC Pte Ltd"
+          />
 
-  {/* Contact Person */}
-  <div className="form-group">
-    <label htmlFor="contactPerson">Contact Person</label>
+          {/* Show the error only when one exists. */}
+          {errors.companyName && (
+            <p className="form-error">
+              {errors.companyName}
+            </p>
+          )}
+        </div>
 
-    <input
-      type="text"
-      id="contactPerson"
-      name="contactPerson"
-      value={formData.contactPerson}
-      onChange={handleChange}
-      placeholder="e.g. John Tan"
-    />
-  </div>
+        {/* ===================================================
+            CONTACT PERSON
+            =================================================== */}
 
-  {/* Email */}
-  <div className="form-group">
-    <label htmlFor="email">Email</label>
+        <div className="form-group">
+          <label htmlFor="contactPerson">
+            Contact Person
+          </label>
 
-    <input
-      type="email"
-      id="email"
-      name="email"
-      value={formData.email}
-      onChange={handleChange}
-      placeholder="e.g. john@company.com"
-    />
-  </div>
+          <input
+            type="text"
+            id="contactPerson"
+            name="contactPerson"
+            value={formData.contactPerson}
+            onChange={handleChange}
+            placeholder="e.g. John Tan"
+          />
 
-  {/* Phone */}
-  <div className="form-group">
-    <label htmlFor="phone">Phone</label>
+          {errors.contactPerson && (
+            <p className="form-error">
+              {errors.contactPerson}
+            </p>
+          )}
+        </div>
 
-    <input
-      type="tel"
-      id="phone"
-      name="phone"
-      value={formData.phone}
-      onChange={handleChange}
-      placeholder="e.g. +65 6123 4567"
-    />
-  </div>
+        {/* ===================================================
+            EMAIL
+            =================================================== */}
 
-{/* =====================================================
-    FORM ACTION
-    ===================================================== */}
+        <div className="form-group">
+          <label htmlFor="email">
+            Email
+          </label>
 
-<button
-  type="submit"
-  className="submit-button"
->
-  Add Customer
-</button>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            placeholder="e.g. john@company.com"
+          />
 
+          {errors.email && (
+            <p className="form-error">
+              {errors.email}
+            </p>
+          )}
+        </div>
 
-</form>
+        {/* ===================================================
+            PHONE
+            =================================================== */}
+
+        <div className="form-group">
+          <label htmlFor="phone">
+            Phone
+          </label>
+
+          <input
+            type="tel"
+            id="phone"
+            name="phone"
+            value={formData.phone}
+            onChange={handleChange}
+            placeholder="e.g. +65 6123 4567"
+          />
+
+          {errors.phone && (
+            <p className="form-error">
+              {errors.phone}
+            </p>
+          )}
+        </div>
+
+        {/* ===================================================
+            FORM ACTION
+            =================================================== */}
+
+        <button
+          type="submit"
+          className="submit-button"
+        >
+          Add Customer
+        </button>
+      </form>
     </main>
   );
 }
 
-// Export the page so React Router can display it.
+// =========================================================
+// EXPORT
+// =========================================================
+
 export default NewCustomerPage;

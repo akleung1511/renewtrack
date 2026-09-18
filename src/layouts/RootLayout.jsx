@@ -1,37 +1,125 @@
 // RootLayout.jsx
-// This component provides the common layout used by RenewTrack pages.
+// This component provides the common layout used
+// by all protected RenewTrack pages.
 
-// Outlet comes from React Router.
-// It represents the location where the selected child page will appear.
-import { Outlet } from "react-router-dom";
+// =========================================================
+// IMPORTS
+// =========================================================
+
+// useContext lets us access the logged-in user
+// and logout function from AuthContext.
+import { useContext } from "react";
+
+// Outlet represents the location where the
+// selected child route will appear.
+//
+// useNavigate lets us navigate after logout.
+import {
+  Outlet,
+  useNavigate,
+} from "react-router-dom";
 
 // Import our reusable Sidebar component.
 import Sidebar from "../components/Sidebar.jsx";
 
-function RootLayout() {
-  return (
-    // This div will eventually control the overall CRM layout.
-    <div className="app-layout">
+// Import authentication context.
+import AuthContext from "../context/authContext.js";
 
-      {/* The Sidebar stays visible while we move between pages. */}
+// =========================================================
+// ROOT LAYOUT COMPONENT
+// =========================================================
+
+function RootLayout() {
+  // =========================================================
+  // AUTHENTICATION
+  // =========================================================
+
+  // Get the logged-in user and logout function
+  // from AuthContext.
+  const {
+    user,
+    logout,
+  } = useContext(AuthContext);
+
+  // =========================================================
+  // NAVIGATION
+  // =========================================================
+
+  const navigate = useNavigate();
+
+  // =========================================================
+  // LOGOUT
+  // =========================================================
+
+  const handleLogout = () => {
+    // Remove the logged-in user from AuthContext.
+    logout();
+
+    // Return to the Login page.
+    navigate("/login");
+  };
+
+  // =========================================================
+  // DISPLAY LAYOUT
+  // =========================================================
+
+  return (
+    <div className="app-layout">
+      {/* =====================================================
+          SIDEBAR
+          ===================================================== */}
+
       <Sidebar />
 
-      {/* This area contains the currently selected page. */}
+      {/* =====================================================
+          MAIN CONTENT AREA
+          ===================================================== */}
+
       <div className="page-content">
+        {/* ===================================================
+            USER BAR
+            =================================================== */}
 
-        {/* Outlet is replaced by the current child route.
-            For example:
-            /dashboard  -> DashboardPage
-            /customers  -> CustomersPage
-            /contracts  -> ContractsPage
+        <header className="user-bar">
+          <span className="user-email">
+            {user?.email}
+          </span>
+
+          <button
+            type="button"
+            className="logout-button"
+            onClick={handleLogout}
+          >
+            Logout
+          </button>
+        </header>
+
+        {/* ===================================================
+            CURRENT PAGE
+            =================================================== */}
+
+        {/* Outlet is replaced by the selected child route.
+
+            Examples:
+
+            /dashboard
+                -> DashboardPage
+
+            /customers
+                -> CustomersPage
+
+            /contracts
+                -> ContractsPage
         */}
+
         <Outlet />
-
       </div>
-
     </div>
   );
 }
 
-// Export RootLayout so App.jsx can use it.
+// =========================================================
+// EXPORT
+// =========================================================
+
 export default RootLayout;

@@ -11,6 +11,9 @@ import StatCard from "../components/StatCard.jsx";
 // Import the reusable StatusBadge component.
 import StatusBadge from "../components/StatusBadge.jsx";
 
+// Import our reusable date calculation function.
+import { calculateDaysRemaining } from "../utils/dateUtils.js";
+
 // =========================================================
 // DASHBOARD COMPONENT
 // =========================================================
@@ -43,27 +46,58 @@ function DashboardPage({ customers, contracts }) {
     (contract) => contract.status === "Expired",
   ).length;
 
-// =========================================================
-// UPCOMING RENEWALS
-// =========================================================
+  // =========================================================
+  // TOTAL CONTRACT VALUE
+  // =========================================================
 
-// Build the Upcoming Renewals list from the real
-// contracts array.
-//
-// 1. filter() removes expired contracts.
-// 2. spread [...] creates a new array.
-// 3. sort() puts the nearest expiry date first.
-//
-// We create a new array before sorting because sort()
-// changes the array it is used on. We do not want to
-// directly modify our React state.
-const upcomingRenewals = [...contracts]
-  .filter((contract) => contract.status !== "Expired")
-  .sort(
-    (a, b) =>
-      new Date(a.expiryDate) - new Date(b.expiryDate),
+  // Add together the value of every contract.
+  //
+  // reduce() starts at 0 and adds each contract value
+  // to the running total.
+  const totalContractValue = contracts.reduce(
+    (total, contract) =>
+      total + Number(contract.value || 0),
+    0,
   );
-  
+
+  // =========================================================
+  // UPCOMING RENEWALS
+  // =========================================================
+
+  // Build the Upcoming Renewals list from the real
+  // contracts array.
+  //
+  // We use the actual expiry date rather than relying
+  // only on the manually selected contract status.
+  //
+  // Step 1:
+  // Keep contracts that have not expired.
+  //
+  // Step 2:
+  // Create a new array before sorting because sort()
+  // changes the array it is used on.
+  //
+  // Step 3:
+  // Sort contracts so the nearest expiry appears first.
+  //
+  // Step 4:
+  // Show only the first 5 upcoming renewals.
+  const upcomingRenewals = contracts
+    .filter(
+      (contract) =>
+        calculateDaysRemaining(contract.expiryDate) >= 0,
+    )
+    .slice()
+    .sort(
+      (a, b) =>
+        new Date(a.expiryDate) -
+        new Date(b.expiryDate),
+    )
+    .slice(0, 5);
+
+  // =========================================================
+  // DISPLAY PAGE
+  // =========================================================
 
   return (
     <main>
@@ -80,34 +114,40 @@ const upcomingRenewals = [...contracts]
           ===================================================== */}
 
       <div className="stats-grid">
-        {/* Display the real number of customers. */}
+        {/* Total number of customers */}
         <StatCard
           title="Total Customers"
           value={totalCustomers}
         />
 
-        {/* Display the real number of contracts. */}
+        {/* Total number of contracts */}
         <StatCard
           title="Total Contracts"
           value={totalContracts}
         />
 
-        {/* Display contracts with Active status. */}
+        {/* Active contracts */}
         <StatCard
           title="Active Contracts"
           value={activeContracts}
         />
 
-        {/* Display contracts with Expiring Soon status. */}
+        {/* Contracts marked Expiring Soon */}
         <StatCard
           title="Expiring Soon"
           value={expiringSoonContracts}
         />
 
-        {/* Display contracts with Expired status. */}
+        {/* Expired contracts */}
         <StatCard
           title="Expired"
           value={expiredContracts}
+        />
+
+        {/* Total value of all contracts */}
+        <StatCard
+          title="Total Contract Value"
+          value={`$${totalContractValue.toLocaleString()}`}
         />
       </div>
 
@@ -118,34 +158,67 @@ const upcomingRenewals = [...contracts]
       <section className="renewals-section">
         <h2>Upcoming Renewals</h2>
 
-        <table className="renewals-table">
-          <thead>
-            <tr>
-              <th>Customer</th>
-              <th>Contract</th>
-              <th>Expiry Date</th>
-              <th>Status</th>
-            </tr>
-          </thead>
+        {/* ===================================================
+            EMPTY STATE
+            =================================================== */}
 
-          <tbody>
-            {/* This still uses temporary data.
-                We will replace it in Step 11C. */}
-            {upcomingRenewals.map((contract) => (
-              <tr key={contract.id}>
-                <td>{contract.customer}</td>
+        {upcomingRenewals.length === 0 ? (
+          <p>No upcoming renewals found.</p>
+        ) : (
+          <table className="renewals-table">
+            {/* ===============================================
+                TABLE HEADER
+                =============================================== */}
 
-                <td>{contract.contractName}</td>
-
-                <td>{contract.expiryDate}</td>
-
-                <td>
-                  <StatusBadge status={contract.status} />
-                </td>
+            <thead>
+              <tr>
+                <th>Customer</th>
+                <th>Contract</th>
+                <th>Expiry Date</th>
+                <th>Days Remaining</th>
+                <th>Status</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+
+            {/* ===============================================
+                TABLE BODY
+                =============================================== */}
+
+            <tbody>
+              {upcomingRenewals.map((contract) => {
+                // Calculate the number of days until
+                // this individual contract expires.
+                const daysRemaining =
+                  calculateDaysRemaining(
+                    contract.expiryDate,
+                  );
+
+                return (
+                  <tr key={contract.id}>
+                    {/* Customer / Company */}
+                    <td>{contract.customer}</td>
+
+                    {/* Contract Name */}
+                    <td>{contract.contractName}</td>
+
+                    {/* Expiry Date */}
+                    <td>{contract.expiryDate}</td>
+
+                    {/* Days Remaining */}
+                    <td>{daysRemaining} days</td>
+
+                    {/* Contract Status */}
+                    <td>
+                      <StatusBadge
+                        status={contract.status}
+                      />
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        )}
       </section>
     </main>
   );

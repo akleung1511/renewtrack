@@ -5,36 +5,42 @@
 // IMPORTS
 // =========================================================
 
-// Import useState so this page can store
-// the values entered into the form.
 import { useState } from "react";
 
-// Link allows normal navigation.
-// useNavigate allows us to navigate using JavaScript
-// after successfully adding a contract.
-import { Link, useNavigate } from "react-router-dom";
+import {
+  Link,
+  useNavigate,
+} from "react-router-dom";
+
+// Import reusable contract validation functions.
+import {
+  validateContract,
+  hasValidationErrors,
+} from "../utils/validationUtils.js";
 
 // =========================================================
-// NEW CONTRACT PAGE
+// NEW CONTRACT PAGE COMPONENT
 // =========================================================
 
 // Receive:
 // addContract -> function from App.jsx used to save a contract
 // customers   -> customer list loaded from our API
-function NewContractPage({ addContract, customers }) {
+function NewContractPage({
+  addContract,
+  customers,
+}) {
   // =========================================================
   // NAVIGATION
   // =========================================================
 
-  // Allows us to navigate back to Contracts
-  // after successfully creating a contract.
+  // Used to return to Contracts after
+  // successfully creating a contract.
   const navigate = useNavigate();
 
   // =========================================================
   // FORM STATE
   // =========================================================
 
-  // Store all values entered into the Add Contract form.
   const [formData, setFormData] = useState({
     customerId: "",
     contractName: "",
@@ -45,20 +51,30 @@ function NewContractPage({ addContract, customers }) {
   });
 
   // =========================================================
+  // VALIDATION ERROR STATE
+  // =========================================================
+
+  // Store validation errors for each field.
+  const [errors, setErrors] = useState({});
+
+  // =========================================================
   // HANDLE FORM INPUT CHANGES
   // =========================================================
 
-  // This reusable function runs whenever
-  // an input or select value changes.
   const handleChange = (event) => {
-    // Get the name and value of the field that changed.
     const { name, value } = event.target;
 
-    // Update only that field while keeping
-    // all the other form values.
+    // Update the field that changed.
     setFormData((previousFormData) => ({
       ...previousFormData,
       [name]: value,
+    }));
+
+    // Clear this field's error when
+    // the user starts correcting it.
+    setErrors((previousErrors) => ({
+      ...previousErrors,
+      [name]: "",
     }));
   };
 
@@ -66,57 +82,71 @@ function NewContractPage({ addContract, customers }) {
   // HANDLE FORM SUBMISSION
   // =========================================================
 
-  // This function runs when the user clicks Add Contract.
-  //
-  // It is async because addContract() now sends
-  // a POST request to our json-server API.
   const handleSubmit = async (event) => {
     // Prevent the browser from refreshing.
     event.preventDefault();
 
     // =======================================================
-    // FIND THE SELECTED CUSTOMER
+    // VALIDATE FORM
     // =======================================================
 
-    // <select> values are strings.
-    //
-    // json-server also uses string IDs and can generate
-    // IDs containing letters.
-    //
-    // Therefore we compare both IDs as strings.
-    const selectedCustomer = customers.find(
-      (customer) =>
-        String(customer.id) === String(formData.customerId),
-    );
+    const validationErrors =
+      validateContract(formData);
 
-    // Safety check.
-    // If no matching customer exists, stop here.
-    if (!selectedCustomer) {
-      console.error("Selected customer was not found.");
+    // Display any validation errors.
+    setErrors(validationErrors);
+
+    // Stop if validation failed.
+    if (hasValidationErrors(validationErrors)) {
       return;
     }
 
     // =======================================================
-    // CREATE THE NEW CONTRACT
+    // FIND SELECTED CUSTOMER
+    // =======================================================
+
+    // json-server IDs may contain letters,
+    // so compare both values as strings.
+    const selectedCustomer = customers.find(
+      (customer) =>
+        String(customer.id) ===
+        String(formData.customerId),
+    );
+
+    // This should normally never happen because
+    // validation already requires a customer.
+    //
+    // However, we still protect against an ID
+    // that no longer exists in the customer list.
+    if (!selectedCustomer) {
+      setErrors((previousErrors) => ({
+        ...previousErrors,
+        customerId:
+          "The selected customer could not be found.",
+      }));
+
+      return;
+    }
+
+    // =======================================================
+    // CREATE NEW CONTRACT
     // =======================================================
 
     const newContract = {
-      // Store the actual json-server customer ID.
-      //
-      // Do NOT use Number() because IDs may contain letters.
+      // Store the real json-server customer ID.
       customerId: formData.customerId,
 
-      // Store the company name for easy display
-      // on the Contracts page.
+      // Store company name for easy display.
       customer: selectedCustomer.companyName,
 
-      // Contract information.
-      contractName: formData.contractName,
+      // Remove accidental spaces from the contract name.
+      contractName: formData.contractName.trim(),
+
       startDate: formData.startDate,
       expiryDate: formData.expiryDate,
 
-      // Number inputs still give us strings,
-      // so convert the contract value into a number.
+      // HTML number inputs still return strings,
+      // so convert the value into a number.
       value: Number(formData.value),
 
       status: formData.status,
@@ -126,11 +156,11 @@ function NewContractPage({ addContract, customers }) {
     // SAVE CONTRACT
     // =======================================================
 
-    // Wait for App.jsx to POST the new contract
+    // Wait for App.jsx to POST the contract
     // to json-server.
     await addContract(newContract);
 
-    // Navigate back only after the API request finishes.
+    // Navigate only after the API request finishes.
     navigate("/contracts");
   };
 
@@ -146,9 +176,14 @@ function NewContractPage({ addContract, customers }) {
 
       <h1>Add Contract</h1>
 
-      <p>Create a new customer contract in RenewTrack.</p>
+      <p>
+        Create a new customer contract in RenewTrack.
+      </p>
 
-      <Link to="/contracts" className="back-link">
+      <Link
+        to="/contracts"
+        className="back-link"
+      >
         ← Back to Contracts
       </Link>
 
@@ -156,25 +191,30 @@ function NewContractPage({ addContract, customers }) {
           ADD CONTRACT FORM
           ===================================================== */}
 
-      <form className="contract-form" onSubmit={handleSubmit}>
+      <form
+        className="contract-form"
+        onSubmit={handleSubmit}
+        noValidate
+      >
         {/* ===================================================
             CUSTOMER
             =================================================== */}
 
         <div className="form-group">
-          <label htmlFor="customerId">Customer</label>
+          <label htmlFor="customerId">
+            Customer
+          </label>
 
-          {/* Select an existing customer from the API data. */}
           <select
             id="customerId"
             name="customerId"
             value={formData.customerId}
             onChange={handleChange}
-            required
           >
-            <option value="">Select a customer</option>
+            <option value="">
+              Select a customer
+            </option>
 
-            {/* Create one option for every customer. */}
             {customers.map((customer) => (
               <option
                 key={customer.id}
@@ -184,6 +224,12 @@ function NewContractPage({ addContract, customers }) {
               </option>
             ))}
           </select>
+
+          {errors.customerId && (
+            <p className="form-error">
+              {errors.customerId}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -202,8 +248,13 @@ function NewContractPage({ addContract, customers }) {
             value={formData.contractName}
             onChange={handleChange}
             placeholder="e.g. IT Maintenance Contract"
-            required
           />
+
+          {errors.contractName && (
+            <p className="form-error">
+              {errors.contractName}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -211,7 +262,9 @@ function NewContractPage({ addContract, customers }) {
             =================================================== */}
 
         <div className="form-group">
-          <label htmlFor="startDate">Start Date</label>
+          <label htmlFor="startDate">
+            Start Date
+          </label>
 
           <input
             type="date"
@@ -219,8 +272,13 @@ function NewContractPage({ addContract, customers }) {
             name="startDate"
             value={formData.startDate}
             onChange={handleChange}
-            required
           />
+
+          {errors.startDate && (
+            <p className="form-error">
+              {errors.startDate}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -228,7 +286,9 @@ function NewContractPage({ addContract, customers }) {
             =================================================== */}
 
         <div className="form-group">
-          <label htmlFor="expiryDate">Expiry Date</label>
+          <label htmlFor="expiryDate">
+            Expiry Date
+          </label>
 
           <input
             type="date"
@@ -236,8 +296,13 @@ function NewContractPage({ addContract, customers }) {
             name="expiryDate"
             value={formData.expiryDate}
             onChange={handleChange}
-            required
           />
+
+          {errors.expiryDate && (
+            <p className="form-error">
+              {errors.expiryDate}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -257,8 +322,13 @@ function NewContractPage({ addContract, customers }) {
             onChange={handleChange}
             placeholder="e.g. 24000"
             min="0"
-            required
           />
+
+          {errors.value && (
+            <p className="form-error">
+              {errors.value}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -266,7 +336,9 @@ function NewContractPage({ addContract, customers }) {
             =================================================== */}
 
         <div className="form-group">
-          <label htmlFor="status">Status</label>
+          <label htmlFor="status">
+            Status
+          </label>
 
           <select
             id="status"
@@ -274,12 +346,24 @@ function NewContractPage({ addContract, customers }) {
             value={formData.status}
             onChange={handleChange}
           >
-            <option value="Active">Active</option>
+            <option value="Active">
+              Active
+            </option>
+
             <option value="Expiring Soon">
               Expiring Soon
             </option>
-            <option value="Expired">Expired</option>
+
+            <option value="Expired">
+              Expired
+            </option>
           </select>
+
+          {errors.status && (
+            <p className="form-error">
+              {errors.status}
+            </p>
+          )}
         </div>
 
         {/* ===================================================
@@ -301,5 +385,4 @@ function NewContractPage({ addContract, customers }) {
 // EXPORT
 // =========================================================
 
-// Export the page so React Router can display it.
 export default NewContractPage;

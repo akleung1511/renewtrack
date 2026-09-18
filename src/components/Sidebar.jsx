@@ -1,44 +1,81 @@
 // Sidebar.jsx
-// This is a reusable navigation component for RenewTrack.
+// This is the reusable navigation sidebar for RenewTrack.
+
+// =========================================================
+// IMPORTS
+// =========================================================
 
 // NavLink comes from React Router.
-// It allows us to navigate without refreshing the whole webpage.
+//
+// Unlike a normal <a> tag, NavLink allows us to
+// navigate without refreshing the whole application.
+//
+// NavLink can also automatically identify
+// which page is currently active.
 import { NavLink } from "react-router-dom";
+
+// =========================================================
+// SIDEBAR COMPONENT
+// =========================================================
 
 function Sidebar() {
   return (
-    // <aside> is suitable for sidebar/navigation content.
+    // <aside> is appropriate for sidebar
+    // and navigation content.
     <aside>
-      
-      {/* RenewTrack application name */}
+      {/* =====================================================
+          APPLICATION BRANDING
+          ===================================================== */}
+
       <div>
         <h2>RenewTrack</h2>
+
         <p>Contract Renewal CRM</p>
       </div>
 
-      {/* Main navigation links */}
-      <nav>
+      {/* =====================================================
+          MAIN NAVIGATION
+          ===================================================== */}
 
-        {/* Clicking this link takes the user to /dashboard */}
+      <nav>
+        {/* ===================================================
+            DASHBOARD
+            =================================================== */}
+
         <NavLink to="/dashboard">
           Dashboard
         </NavLink>
 
-        {/* Clicking this link takes the user to /customers */}
+        {/* ===================================================
+            CUSTOMERS
+            =================================================== */}
+
         <NavLink to="/customers">
           Customers
         </NavLink>
 
-        {/* Clicking this link takes the user to /contracts */}
+        {/* ===================================================
+            CONTRACTS
+            =================================================== */}
+
         <NavLink to="/contracts">
           Contracts
         </NavLink>
 
-      </nav>
+        {/* ===================================================
+            REPORTS
+            =================================================== */}
 
+        <NavLink to="/reports">
+          Reports
+        </NavLink>
+      </nav>
     </aside>
   );
 }
 
-// Export Sidebar so other components can use it.
+// =========================================================
+// EXPORT
+// =========================================================
+
 export default Sidebar;

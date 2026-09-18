@@ -707,3 +707,331 @@ aside nav a.active {
 .customer-table tbody tr:hover {
   background-color: #f9fafb;
 }
+
+/* =========================================================
+   LOGIN PAGE
+   ========================================================= */
+
+/*
+   The Login page does not use RootLayout,
+   so it needs its own full-screen layout.
+*/
+.login-page {
+  min-height: 100vh;
+
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  padding: 24px;
+
+  background-color: #f5f7fa;
+}
+
+
+/* =========================================================
+   LOGIN CARD
+   ========================================================= */
+
+/*
+   Keep the login form centred and prevent it
+   from becoming too wide on large screens.
+*/
+.login-card {
+  width: 100%;
+  max-width: 420px;
+
+  padding: 32px;
+
+  background-color: white;
+
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+
+/* RenewTrack title */
+.login-card h1 {
+  margin-top: 0;
+  margin-bottom: 4px;
+
+  font-size: 30px;
+  color: #1f2937;
+}
+
+
+/* Login heading */
+.login-card h2 {
+  margin-top: 28px;
+  margin-bottom: 8px;
+
+  font-size: 22px;
+  color: #1f2937;
+}
+
+
+/* General login page text */
+.login-card p {
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   LOGIN NOTE
+   ========================================================= */
+
+/*
+   Small explanation shown underneath
+   the Login button.
+*/
+.login-note {
+  margin-top: 20px;
+
+  font-size: 13px;
+}
+
+
+/* =========================================================
+   FORM ERROR
+   ========================================================= */
+
+/*
+   Used by LoginPage.jsx when the email
+   address is missing or invalid.
+*/
+.form-error {
+  margin-top: 8px;
+  margin-bottom: 0;
+
+  font-size: 13px;
+
+  color: #b91c1c;
+}
+
+
+/* =========================================================
+   USER BAR
+   ========================================================= */
+
+/*
+   RootLayout displays this above the current page.
+
+   It contains:
+   1. Logged-in user's email
+   2. Logout button
+*/
+.user-bar {
+  display: flex;
+
+  justify-content: flex-end;
+  align-items: center;
+
+  gap: 16px;
+
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+
+  border-bottom: 1px solid #e5e7eb;
+}
+
+
+/* Logged-in email address */
+.user-email {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+
+/* =========================================================
+   LOGOUT BUTTON
+   ========================================================= */
+
+.logout-button {
+  padding: 8px 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+
+  background-color: white;
+  color: #374151;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+}
+
+
+/* Hover feedback */
+.logout-button:hover {
+  background-color: #f3f4f6;
+}
+
+
+/* =========================================================
+   REPORTS PAGE
+   ========================================================= */
+
+/*
+   ReportsPage reuses:
+   - .stats-grid
+   - .stat-card
+   - .renewals-section
+   - .renewals-table
+   - .status-badge
+
+   Those styles already exist above.
+
+   The rules below make the report table easier
+   to use on smaller screens.
+*/
+.renewals-section {
+  overflow-x: auto;
+}
+
+
+/* Prevent report table headings from wrapping
+   unnecessarily on normal desktop screens. */
+.renewals-table th {
+  white-space: nowrap;
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+/*
+   When the screen becomes narrower,
+   reduce the number of dashboard/report cards.
+*/
+@media (max-width: 1100px) {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .contracts-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+/*
+   Tablet and mobile layout.
+*/
+@media (max-width: 768px) {
+  /* =======================================================
+     APPLICATION LAYOUT
+     ======================================================= */
+
+  .app-layout {
+    flex-direction: column;
+  }
+
+
+  /* =======================================================
+     SIDEBAR
+     ======================================================= */
+
+  aside {
+    width: 100%;
+    min-height: auto;
+  }
+
+  aside p {
+    margin-bottom: 20px;
+  }
+
+  aside nav {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+
+  /* =======================================================
+     PAGE CONTENT
+     ======================================================= */
+
+  .page-content {
+    padding: 20px;
+  }
+
+
+  /* =======================================================
+     DASHBOARD / REPORT CARDS
+     ======================================================= */
+
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+
+  /* =======================================================
+     CONTRACT FILTERS
+     ======================================================= */
+
+  .contract-filters {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .contract-filters .form-group {
+    width: 100%;
+  }
+
+
+  /* =======================================================
+     CUSTOMER SEARCH
+     ======================================================= */
+
+  .customer-search {
+    width: 100%;
+  }
+
+
+  /* =======================================================
+     USER BAR
+     ======================================================= */
+
+  .user-bar {
+    justify-content: space-between;
+  }
+
+
+  /* =======================================================
+     TABLES
+     ======================================================= */
+
+  .renewals-table {
+    min-width: 700px;
+  }
+
+  .customer-table {
+    min-width: 700px;
+  }
+}
+
+
+/*
+   Small mobile screens.
+*/
+@media (max-width: 480px) {
+  .page-content {
+    padding: 16px;
+  }
+
+  .login-page {
+    padding: 16px;
+  }
+
+  .login-card {
+    padding: 24px;
+  }
+
+  .user-bar {
+    flex-direction: column;
+    align-items: flex-end;
+  }
+}
