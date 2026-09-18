@@ -1,292 +1,175 @@
 # RenewTrack
 
-RenewTrack is a React-based **Contract Renewal CRM** developed as a Module 2 project.
+RenewTrack is a React-based **Contract Renewal CRM** designed to help users manage customers, contracts, renewal dates, contract values, and contract statuses through a simple and structured interface.
 
-The application helps users manage customers and their contracts, monitor renewal dates, track contract status, and view contract information through a dashboard and reports page.
+The application provides customer and contract management, dashboard statistics, renewal tracking, reporting, authentication, search and filtering.
 
 ---
 
-## Features
+## Live Demo
+
+**RenewTrack Live Application**
+
+https://akleung1511.github.io/renewtrack/#/login
+
+### Demo Login
+
+Enter any valid email address.
+
+**Password:**
+
+```text
+1234
+```
+
+Example:
+
+```text
+Email: demo@example.com
+Password: 1234
+```
+
+> The login system is simulated front-end authentication for demonstration purposes. It is not intended to provide production-level authentication or security.
+
+---
+
+## GitHub Repository
+
+Source code:
+
+https://github.com/akleung1511/renewtrack
+
+---
+
+## About RenewTrack
+
+Managing multiple customer contracts can become difficult when customer information, renewal dates, contract values, and contract statuses are stored separately.
+
+RenewTrack brings this information together in a simple CRM-style application.
+
+The application allows users to:
+
+- Manage customer records
+- Manage customer contracts
+- Track contract expiry dates
+- Identify upcoming renewals
+- View expired contracts
+- Search and filter records
+- View dashboard statistics
+- View contract reports
+- Add and edit customer records
+- Add and edit contract records
+- Navigate between related customer and contract information
+
+---
+
+## Main Features
 
 ### Dashboard
 
-- Displays total customers
-- Displays total contracts
-- Displays active contracts
-- Displays contracts expiring soon
-- Displays expired contracts
-- Shows upcoming renewals ordered by expiry date
+The dashboard provides an overview of the contract portfolio.
 
-### Customer Management
+It displays:
 
-- View all customers
-- Search customers
-- Add new customers
-- View customer details
-- Edit customer information
-- Delete customers that have no contracts
-- Prevent deletion when contracts are linked to a customer
+- Total Customers
+- Total Contracts
+- Active Contracts
+- Expiring Soon Contracts
+- Expired Contracts
+- Upcoming Renewals
 
-### Contract Management
-
-- View all contracts
-- Search contracts
-- Filter contracts by status
-- Add new contracts
-- View contract details
-- Edit existing contracts
-- Track days remaining until expiry
-- Display how many days ago a contract expired
-- Preserve contracts as historical business records
-
-### Reports
-
-- Display total contract count
-- Display active contract count
-- Display expiring soon contract count
-- Display expired contract count
-- Calculate total contract value
-- Calculate active contract value
-- Display a contract report ordered by expiry date
-
-### Authentication
-
-- Demo login page
-- Email format validation
-- Password validation
-- React Context authentication state
-- Protected application routes
-- Logout functionality
+Upcoming renewals are sorted by expiry date so contracts with nearer renewal dates can be identified quickly.
 
 ---
 
-## Demo Login
+## Customer Management
 
-RenewTrack includes simulated front-end authentication for demonstration purposes.
+The Customers section provides a structured view of customer information.
 
-Use:
+Customer records include:
 
-- **Email:** Any valid email address
-- **Password:** `1234`
-
-Example:
-
-- **Email:** `user@example.com`
-- **Password:** `1234`
-
-The authentication feature demonstrates React Context, protected routes, login/logout state, form handling, and validation.
-
-> **Important:** This is demo authentication only. The password is stored in front-end code and this authentication should not be used to protect real or sensitive data.
-
----
-
-## Technologies Used
-
-- React
-- JavaScript
-- JSX
-- React Router
-- React Context API
-- React Hooks
-- Vite
-- CSS
-- JSON Server
-- REST API concepts
-- ESLint
-- Git
-- GitHub
-
----
-
-## React Concepts Demonstrated
-
-RenewTrack demonstrates the following React and JavaScript concepts:
-
-- Components
-- Props
-- State
-- `useState`
-- `useEffect`
-- `useContext`
-- Controlled forms
-- Form validation
-- Conditional rendering
-- List rendering
-- Event handling
-- React Router
-- Dynamic routes
-- Protected routes
-- Context API
-- Asynchronous JavaScript
-- `async` / `await`
-- Fetch API
-- REST API operations
-- Loading states
-- Error handling
-- Reusable components
-- Array methods such as:
-  - `map()`
-  - `filter()`
-  - `some()`
-  - `sort()`
-  - `reduce()`
-
----
-
-## Customer and Contract Relationship
-
-Each contract belongs to a customer.
-
-Contracts store a `customerId` that links the contract to its customer record.
-
-Example:
-
-```json
-{
-  "id": "1",
-  "customerId": "1",
-  "customer": "ABC Pte Ltd",
-  "contractName": "IT Maintenance Contract",
-  "startDate": "2026-01-01",
-  "expiryDate": "2026-12-31",
-  "value": 24000,
-  "status": "Active"
-}
-```
-
-RenewTrack uses the customer ID relationship to determine whether a customer has existing contracts.
-
----
-
-## Business Rules
-
-RenewTrack includes several business rules.
-
-### Customer Deletion
-
-A customer can only be deleted when the customer has **no existing contracts**.
-
-If contracts are linked to the customer, the Delete button is disabled.
-
-### Contract Retention
-
-Contracts cannot be deleted.
-
-This applies to:
-
-- Active contracts
-- Expiring Soon contracts
-- Expired contracts
-
-Contracts are treated as historical business records and are therefore retained in the system.
-
-### Contract Validation
-
-Contract forms validate important information before saving.
-
-Examples include:
-
-- Customer must be selected
-- Contract name is required
-- Start date is required
-- Expiry date is required
-- Expiry date must be after the start date
-- Contract value must be greater than zero
-
-### Customer Validation
-
-Customer forms validate information such as:
-
-- Company name
-- Contact person
+- Company Name
+- Contact Person
 - Email
-- Phone number
+- Phone Number
 
-### IDs
+Users can:
 
-Customer and contract IDs are treated as strings.
+- View customers
+- Search customers
+- Add customers
+- View customer details
+- Edit customers
+- Delete eligible customers
 
-This supports JSON Server generated IDs that may contain both letters and numbers.
-
----
-
-## API
-
-RenewTrack uses **JSON Server** as a development REST API.
-
-The application uses two main API resources:
-
-```text
-/customers
-/contracts
-```
-
-Customer operations include:
-
-```text
-GET     /customers
-POST    /customers
-PUT     /customers/:id
-DELETE  /customers/:id
-```
-
-Contract operations include:
-
-```text
-GET     /contracts
-POST    /contracts
-PUT     /contracts/:id
-```
-
-Contract deletion is intentionally not implemented because contracts are retained as historical business records.
+A customer with an existing contract cannot be deleted. This protects the relationship between customer and contract records.
 
 ---
 
-## Running the Project
+## Contract Management
 
-### 1. Install Dependencies
+The Contracts section allows users to manage customer contracts.
 
-Open a terminal in the RenewTrack project folder and run:
+Contract records include:
 
-```bash
-npm install
-```
+- Customer
+- Contract Name
+- Start Date
+- Expiry Date
+- Contract Value
+- Status
 
-### 2. Start the React Application
+Available contract statuses include:
 
-Run:
+- Active
+- Expiring Soon
+- Expired
 
-```bash
-npm run dev
-```
+Users can:
 
-The React development server normally runs at:
+- View contracts
+- Search contracts
+- Filter contracts
+- Add contracts
+- View contract details
+- Edit contracts
+- Track days remaining until expiry
 
-```text
-http://localhost:5173
-```
-
-### 3. Start JSON Server
-
-Open a **second terminal** in the same project folder and run:
-
-```bash
-npm run server
-```
-
-JSON Server runs at:
-
-```text
-http://localhost:3001
-```
-
-Both the React application and JSON Server need to be running during local development.
+Contracts are retained as historical business records and therefore are not deleted from the application.
 
 ---
 
-## Application Routes
+## Reports
 
-RenewTrack includes the following routes:
+RenewTrack includes a Reports page that provides an overview of contract information and renewal status.
+
+The reporting functionality helps users understand the overall contract portfolio and identify contracts requiring attention.
+
+---
+
+## Authentication
+
+RenewTrack includes a simulated authentication system using React Context.
+
+Protected routes prevent access to the main application until the user logs in.
+
+The demonstration password is:
+
+```text
+1234
+```
+
+This authentication system is intended for demonstration purposes only.
+
+A production version would normally use secure server-side authentication and authorization.
+
+---
+
+## Routing
+
+RenewTrack uses React Router to provide navigation within the single-page application.
+
+Main routes include:
 
 ```text
 /login
@@ -306,40 +189,275 @@ RenewTrack includes the following routes:
 /reports
 ```
 
-The Dashboard, Customers, Contracts, and Reports pages are protected routes.
+The public GitHub Pages version uses `HashRouter` to support client-side routing.
 
-Users who are not logged in are redirected to the Login page.
+For example:
+
+```text
+https://akleung1511.github.io/renewtrack/#/dashboard
+```
 
 ---
 
-## Main Pages
+## Data Management
 
-### Login
+RenewTrack has been implemented using two approaches to data persistence.
 
-Provides demo authentication using an email address and password.
+### API Version
 
-### Dashboard
+The API-based version uses **JSON Server** as a mock REST API.
 
-Provides an overview of customer and contract information, including upcoming renewals.
+The React application communicates with endpoints such as:
 
-### Customers
+```text
+GET    /customers
+POST   /customers
+PUT    /customers/:id
+DELETE /customers/:id
 
-Displays customer records and provides search, view, edit, add, and controlled delete functionality.
+GET    /contracts
+POST   /contracts
+PUT    /contracts/:id
+```
 
-### Contracts
+The local API runs at:
 
-Displays contract records and provides search, status filtering, view, edit, and add functionality.
+```text
+http://localhost:3001
+```
 
-### Reports
+Data is stored in:
 
-Provides contract statistics, contract values, and a report table sorted by expiry date.
+```text
+db.json
+```
+
+This implementation demonstrates asynchronous API communication using JavaScript `fetch()`.
+
+---
+
+### GitHub Pages Version
+
+GitHub Pages provides static website hosting and does not run the local JSON Server backend.
+
+The publicly deployed version therefore uses browser:
+
+```text
+localStorage
+```
+
+The deployed architecture is:
+
+```text
+GitHub Pages
+      ↓
+React Application
+      ↓
+React State
+      ↓
+localStorage
+```
+
+This allows users to add and edit records and retain their changes after refreshing the browser.
+
+### Data Persistence Limitation
+
+`localStorage` belongs to an individual browser.
+
+This means:
+
+- Data remains after refreshing the page
+- Data remains when reopening the application in the same browser
+- Different browsers have separate data
+- Different computers have separate data
+- Changes are not shared between users
+
+A future full-stack version could replace localStorage with a shared backend API and database.
+
+---
+
+# Technologies Used
+
+RenewTrack was built using:
+
+- React
+- JavaScript
+- JSX
+- HTML
+- CSS
+- Vite
+- React Router
+- React Context
+- React Hooks
+- JSON Server
+- REST API
+- Fetch API
+- localStorage
+- ESLint
+- Git
+- GitHub
+- GitHub Actions
+- GitHub Pages
+
+---
+
+## React Concepts Demonstrated
+
+### Components
+
+The application is divided into reusable components such as:
+
+```text
+Sidebar
+StatCard
+StatusBadge
+ProtectedRoute
+```
+
+Reusable components help keep the application organised and reduce duplicated code.
+
+---
+
+### State Management
+
+React state is managed using hooks such as:
+
+```javascript
+useState()
+```
+
+State is used for:
+
+- Customers
+- Contracts
+- Forms
+- Authentication
+- Search
+- Filtering
+
+---
+
+### Side Effects
+
+The application uses:
+
+```javascript
+useEffect()
+```
+
+for operations such as:
+
+- Loading data
+- Saving deployed data to localStorage
+- Synchronising application state
+
+---
+
+### Context API
+
+React Context is used to manage authentication information across the application.
+
+This allows authentication state to be shared between components without manually passing it through multiple component levels.
+
+---
+
+### Controlled Forms
+
+Customer and contract forms use controlled React inputs.
+
+For example:
+
+```javascript
+const [formData, setFormData] = useState({
+  companyName: "",
+  contactPerson: "",
+  email: "",
+  phone: "",
+});
+```
+
+Input changes update React state through event handlers.
+
+---
+
+### Lists and Array Methods
+
+Customer and contract data is processed using JavaScript array methods including:
+
+```javascript
+map()
+filter()
+sort()
+some()
+```
+
+These are used for displaying records, searching, filtering, checking relationships and sorting renewals.
+
+---
+
+### Conditional Rendering
+
+RenewTrack uses conditional rendering for:
+
+- Loading states
+- Error messages
+- Contract statuses
+- Expired contracts
+- Search results
+- Protected routes
+- Record-not-found pages
+
+---
+
+### React Router
+
+React Router provides navigation between the different areas of RenewTrack.
+
+Concepts used include:
+
+```text
+Routes
+Route
+Navigate
+NavLink
+Link
+Outlet
+useParams
+useNavigate
+```
+
+---
+
+## Business Rules
+
+RenewTrack includes several business rules to protect data consistency.
+
+### Customer Deletion
+
+Customers with existing contracts cannot be deleted.
+
+This prevents contracts from becoming disconnected from their customer records.
+
+### Contract History
+
+Contracts are retained rather than deleted so historical contract information remains available.
+
+### Customer and Contract Relationship
+
+Contracts reference customers through a customer ID.
+
+When customer information is updated, related contract information can also be kept synchronised.
 
 ---
 
 ## Project Structure
 
+The project is organised approximately as follows:
+
 ```text
 renewtrack/
+│
+├── public/
 │
 ├── src/
 │   │
@@ -350,23 +468,23 @@ renewtrack/
 │   │   └── StatusBadge.jsx
 │   │
 │   ├── context/
-│   │   ├── authContext.js
-│   │   └── AuthContext.jsx
+│   │   ├── AuthContext.jsx
+│   │   └── authContext.js
 │   │
 │   ├── layouts/
 │   │   └── RootLayout.jsx
 │   │
 │   ├── pages/
-│   │   ├── ContractDetailPage.jsx
-│   │   ├── ContractsPage.jsx
-│   │   ├── CustomerDetailPage.jsx
-│   │   ├── CustomersPage.jsx
 │   │   ├── DashboardPage.jsx
-│   │   ├── EditContractPage.jsx
-│   │   ├── EditCustomerPage.jsx
-│   │   ├── LoginPage.jsx
-│   │   ├── NewContractPage.jsx
+│   │   ├── CustomersPage.jsx
 │   │   ├── NewCustomerPage.jsx
+│   │   ├── CustomerDetailPage.jsx
+│   │   ├── EditCustomerPage.jsx
+│   │   ├── ContractsPage.jsx
+│   │   ├── NewContractPage.jsx
+│   │   ├── ContractDetailPage.jsx
+│   │   ├── EditContractPage.jsx
+│   │   ├── LoginPage.jsx
 │   │   └── ReportsPage.jsx
 │   │
 │   ├── utils/
@@ -377,88 +495,98 @@ renewtrack/
 │   ├── index.css
 │   └── main.jsx
 │
+├── .github/
+│   └── workflows/
+│       └── deploy.yml
+│
 ├── db.json
 ├── package.json
-├── package-lock.json
+├── vite.config.js
 └── README.md
 ```
 
 ---
 
-## Data Persistence
+## Running RenewTrack Locally
 
-RenewTrack uses JSON Server and `db.json` for local development data persistence.
+### 1. Clone the repository
 
-Unlike temporary React state, customer and contract changes stored through JSON Server remain available after refreshing the browser.
+```bash
+git clone https://github.com/akleung1511/renewtrack.git
+```
 
-The current development database contains:
+Move into the project directory:
+
+```bash
+cd renewtrack
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Start the Application
+
+```bash
+npm run dev
+```
+
+Vite will display the development URL in the terminal.
+
+---
+
+## Running the JSON Server API
+
+For the API-based version, JSON Server can be started using:
+
+```bash
+npm run server
+```
+
+The API runs on:
 
 ```text
-customers
-contracts
+http://localhost:3001
+```
+
+Available endpoints include:
+
+```text
+http://localhost:3001/customers
+http://localhost:3001/contracts
+```
+
+The React development server and JSON Server should run in separate terminals.
+
+For example:
+
+```text
+Terminal 1
+npm run server
+
+Terminal 2
+npm run dev
 ```
 
 ---
 
-## Loading and Error Handling
+## Code Quality
 
-RenewTrack includes loading and error states when customer and contract data is retrieved from the API.
+RenewTrack uses ESLint for code checking.
 
-For example, while data is loading the application can display:
-
-```text
-Loading customers...
-```
-
-or:
-
-```text
-Loading contracts...
-```
-
-If the API is unavailable, the application displays a user-friendly error message instead of failing silently.
-
----
-
-## Form Validation
-
-RenewTrack performs client-side validation before customer or contract data is sent to the API.
-
-Validation logic is stored in a reusable utility:
-
-```text
-src/utils/validationUtils.js
-```
-
-This allows the Add and Edit pages to share the same validation rules.
-
----
-
-## Responsive Design
-
-RenewTrack includes responsive CSS for smaller screens.
-
-The interface adapts elements such as:
-
-- Sidebar navigation
-- Dashboard statistics
-- Reports
-- Tables
-- Search and filter controls
-- Login page
-- User bar
-
-Tables can scroll horizontally when there is not enough screen width to display all columns.
-
----
-
-## Development Checks
-
-Run ESLint with:
+Run:
 
 ```bash
 npm run lint
 ```
+
+A successful lint check completes without ESLint errors.
+
+---
+
+## Production Build
 
 Create a production build with:
 
@@ -466,53 +594,168 @@ Create a production build with:
 npm run build
 ```
 
-These commands should be run before committing the final project.
+Vite generates the production files inside:
+
+```text
+dist/
+```
+
+The application has been successfully tested using:
+
+```bash
+npm run lint
+npm run build
+```
 
 ---
 
-## Current Project Scope
+## Deployment
 
-RenewTrack is a front-end learning project with a JSON Server development API.
+RenewTrack is publicly deployed using:
 
-It demonstrates the main concepts covered during the React learning module while applying them to a practical Contract Renewal CRM.
+- GitHub
+- GitHub Actions
+- GitHub Pages
 
-The current version includes:
+The deployment workflow performs the following process:
 
-- Routing
-- State management
-- Context
-- API integration
-- CRUD operations
-- Search
-- Filtering
-- Validation
-- Loading states
-- Error handling
-- Protected routes
-- Reporting
-- Responsive styling
+```text
+deployment branch
+        ↓
+Install dependencies
+        ↓
+Build React application
+        ↓
+Generate dist/
+        ↓
+Upload GitHub Pages artifact
+        ↓
+Deploy to GitHub Pages
+```
+
+Live application:
+
+https://akleung1511.github.io/renewtrack/
+
+---
+
+## Repository Branches
+
+RenewTrack maintains separate versions for API development and public deployment.
+
+### `main`
+
+The `main` branch contains the JSON Server / REST API implementation.
+
+It demonstrates API-based data management using:
+
+```text
+React
+   ↓
+fetch()
+   ↓
+JSON Server
+   ↓
+db.json
+```
+
+### `deployment`
+
+The `deployment` branch contains the publicly hosted version.
+
+It uses:
+
+```text
+React
+   ↓
+HashRouter
+   ↓
+React State
+   ↓
+localStorage
+```
+
+The deployment branch also includes:
+
+- Vite `/renewtrack/` base path
+- GitHub Actions deployment workflow
+- GitHub Pages configuration
+
+This separation preserves the API implementation while providing a publicly accessible demonstration.
+
+---
+
+## Current Limitations
+
+The current public version is intended as a demonstration application.
+
+Current limitations include:
+
+- Authentication is simulated
+- Data is stored locally in each browser
+- No shared multi-user database
+- No server-side authorization
+- No automatic renewal notifications
+- No document storage
+- No production backend
 
 ---
 
 ## Future Improvements
 
-Possible future enhancements include:
+Potential future enhancements include:
 
-- Production authentication
+- Backend API
+- SQL or NoSQL database
+- Secure user authentication
 - User roles and permissions
-- Admin and standard user accounts
-- Backend application server
-- Production database
-- Automated renewal reminders
-- Email notifications
-- Advanced reporting
+- Shared multi-user data
+- Automated renewal notifications
+- Email reminders
+- Contract document uploads
+- Advanced reports
 - Charts and analytics
-- Report export
-- Pagination
-- Automated testing
-- Cloud deployment
 - Audit history
-- Renewal workflow management
+- Customer activity history
+- Responsive mobile improvements
+- Automated testing
+- Cloud backend deployment
+
+---
+
+## Project Development
+
+RenewTrack demonstrates how several front-end development concepts can be combined into a larger business application.
+
+The project incorporates:
+
+```text
+React Components
+        ↓
+State Management
+        ↓
+Forms & Validation
+        ↓
+Routing
+        ↓
+Context API
+        ↓
+API Communication
+        ↓
+Business Rules
+        ↓
+Deployment
+```
+
+The project also provided practical experience with:
+
+- Git version control
+- GitHub repositories
+- Branch management
+- Production builds
+- GitHub Actions
+- GitHub Pages
+- Separating development and deployment configurations
 
 ---
 
@@ -520,4 +763,20 @@ Possible future enhancements include:
 
 **Andrew Leung**
 
-Developed as part of a React learning project.
+RenewTrack — Contract Renewal CRM
+
+GitHub:
+
+https://github.com/akleung1511
+
+---
+
+## Live Project
+
+**RenewTrack Contract Renewal CRM**
+
+https://akleung1511.github.io/renewtrack/#/login
+
+**Source Code**
+
+https://github.com/akleung1511/renewtrack
