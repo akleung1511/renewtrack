@@ -35,19 +35,20 @@ function ContractDetailPage({ contracts }) {
   // URL parameters are returned as strings.
   const { contractId } = useParams();
 
-  // =========================================================
-  // FIND THE SELECTED CONTRACT
-  // =========================================================
+// =========================================================
+// FIND THE SELECTED CONTRACT
+// =========================================================
 
-  // Find the contract whose ID matches the ID in the URL.
-  //
-  // Number(contractId) converts:
-  // "1" -> 1
-  //
-  // This is necessary because our contract IDs are numbers.
-  const contract = contracts.find(
-    (contract) => contract.id === Number(contractId),
-  );
+// useParams gives us contractId as a string.
+//
+// json-server also uses string IDs, including generated IDs
+// such as "qVXtzoNxpA".
+//
+// Therefore we compare both IDs as strings.
+const contract = contracts.find(
+  (contract) =>
+    String(contract.id) === String(contractId),
+);
 
   // =========================================================
   // CONTRACT NOT FOUND

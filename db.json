@@ -1,0 +1,92 @@
+{
+  "customers": [
+    {
+      "id": "1",
+      "companyName": "ABC Pte Ltd",
+      "contactPerson": "John Tan",
+      "email": "john.tan@abc.com",
+      "phone": "+65 6123 4567"
+    },
+    {
+      "id": "2",
+      "companyName": "XYZ Engineering",
+      "contactPerson": "Sarah Lim",
+      "email": "sarah.lim@xyz.com",
+      "phone": "+65 6234 5678"
+    },
+    {
+      "id": "3",
+      "companyName": "DEF Solutions",
+      "contactPerson": "Michael Lee",
+      "email": "michael.lee@def.com",
+      "phone": "+65 6345 6789"
+    },
+    {
+      "id": "4",
+      "companyName": "Sunrise Trading Pte Ltd",
+      "contactPerson": "Emily Wong",
+      "email": "emily.wong@sunrise.com",
+      "phone": "+65 6456 7890"
+    },
+    {
+      "companyName": "Test",
+      "contactPerson": "Tester",
+      "email": "test@gmail.com",
+      "phone": "656767667",
+      "id": "uMPspZ1UUJE"
+    }
+  ],
+  "contracts": [
+    {
+      "id": "1",
+      "customerId": "1",
+      "customer": "ABC Pte Ltd",
+      "contractName": "IT Maintenance Contract",
+      "startDate": "2026-01-01",
+      "expiryDate": "2026-12-31",
+      "value": 24000,
+      "status": "Active"
+    },
+    {
+      "id": "2",
+      "customerId": "2",
+      "customer": "XYZ Engineering",
+      "contractName": "Software Support Contract",
+      "startDate": "2026-01-15",
+      "expiryDate": "2027-01-15",
+      "value": 18000,
+      "status": "Expiring Soon"
+    },
+    {
+      "id": "3",
+      "customerId": "3",
+      "customer": "DEF Solutions",
+      "contractName": "Equipment Maintenance Contract",
+      "startDate": "2026-03-01",
+      "expiryDate": "2027-02-28",
+      "value": 32000,
+      "status": "Active"
+    },
+    {
+      "id": "4",
+      "customerId": "4",
+      "customer": "Sunrise Trading Pte Ltd",
+      "contractName": "Network Support Contract",
+      "startDate": "2025-07-01",
+      "expiryDate": "2026-06-30",
+      "value": 12000,
+      "status": "Expired"
+    },
+    {
+      "id": "qYvXtzoNxpA",
+      "customerId": "uMPspZ1UUJE",
+      "customer": "Test",
+      "contractName": "Test Annual Contract",
+      "startDate": "2026-09-16",
+      "expiryDate": "2026-09-24",
+      "value": 67,
+      "status": "Active"
+    }
+  ],
+  "$schema": "./node_modules/json-server/schema.json"
+}

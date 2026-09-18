@@ -17,28 +17,35 @@ function CustomerDetailPage({ customers, contracts }) {
   // customerId will contain "1".
   const { customerId } = useParams();
 
-  // =========================================================
-  // FIND THE SELECTED CUSTOMER
-  // =========================================================
+// =========================================================
+// FIND THE SELECTED CUSTOMER
+// =========================================================
 
-  // useParams gives us customerId as a string,
-  // so Number() converts it into a number.
-  const customer = customers.find(
-    (customer) => customer.id === Number(customerId),
-  );
+// useParams gives us customerId as a string.
+//
+// json-server also uses string IDs, including generated IDs
+// such as "YtVYnJEHVYU".
+//
+// Therefore we compare the IDs as strings.
+// We no longer use Number(customerId).
+const customer = customers.find(
+  (customer) => String(customer.id) === String(customerId),
+);
 
-  // =========================================================
-  // FIND THIS CUSTOMER'S CONTRACTS
-  // =========================================================
+// =========================================================
+// FIND THIS CUSTOMER'S CONTRACTS
+// =========================================================
 
-  // A customer can have more than one contract,
-  // so we use .filter() instead of .find().
-  //
-  // Keep every contract whose customerId
-  // matches the selected customer's ID.
-  const customerContracts = contracts.filter(
-    (contract) => contract.customerId === Number(customerId),
-  );
+// Keep every contract whose customerId matches
+// the selected customer's ID.
+//
+// Convert both values to strings so the relationship
+// works correctly with json-server IDs.
+const customerContracts = contracts.filter(
+  (contract) =>
+    String(contract.customerId) === String(customerId),
+);
+
 
   // If no matching customer exists, display a message.
   if (!customer) {

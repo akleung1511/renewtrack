@@ -25,17 +25,17 @@ function EditCustomerPage({ customers, updateCustomer }) {
   // Allows us to return to Customers after saving.
   const navigate = useNavigate();
 
-  // =========================================================
-  // FIND THE CUSTOMER TO EDIT
-  // =========================================================
+// =========================================================
+// FIND THE SELECTED CUSTOMER
+// =========================================================
 
-  // Find the selected customer from our shared customers list.
-  //
-  // useParams gives us customerId as a string,
-  // so Number() converts it into a number.
-  const customer = customers.find(
-    (customer) => customer.id === Number(customerId),
-  );
+// useParams gives us customerId as a string.
+//
+// json-server uses string IDs, including generated IDs.
+// Therefore we compare both IDs as strings.
+const customer = customers.find(
+  (customer) => String(customer.id) === String(customerId),
+);
 
   // =========================================================
   // EDIT FORM STATE
@@ -65,29 +65,38 @@ function EditCustomerPage({ customers, updateCustomer }) {
   };
 
   // =========================================================
-  // HANDLE FORM SUBMISSION
-  // =========================================================
+// HANDLE FORM SUBMISSION
+// =========================================================
 
-  // This function runs when the user clicks Save Changes.
-  const handleSubmit = (event) => {
-    // Prevent the browser from refreshing.
-    event.preventDefault();
+// This function runs when the user clicks Save Changes.
+//
+// It is async because we need to wait for the API
+// to finish updating the customer before navigating away.
+const handleSubmit = async (event) => {
+  // Prevent the browser from refreshing.
+  event.preventDefault();
 
-    // Create the updated customer.
-    const updatedCustomer = {
-      id: Number(customerId),
-      companyName: formData.companyName,
-      contactPerson: formData.contactPerson,
-      email: formData.email,
-      phone: formData.phone,
-    };
+  // Create the updated customer object.
+  const updatedCustomer = {
+    // Keep the json-server customer ID as a string.
+    // Do NOT use Number(customerId), because json-server
+    // can generate IDs containing letters.
+    id: customerId,
 
-    // Send the updated customer to App.jsx
-    updateCustomer(updatedCustomer);
-
-    // Return to the Customers page.
-    navigate("/customers");
+    companyName: formData.companyName,
+    contactPerson: formData.contactPerson,
+    email: formData.email,
+    phone: formData.phone,
   };
+
+  // Send the updated customer to App.jsx
+  // and wait for the API request to finish.
+  await updateCustomer(updatedCustomer);
+
+  // Return to the Customers page only
+  // after the update has completed.
+  navigate("/customers");
+};
 
   // If the customer does not exist,
   // display a simple message.
