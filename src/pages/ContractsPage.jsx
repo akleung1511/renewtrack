@@ -5,15 +5,16 @@
 // IMPORTS
 // =========================================================
 
-// Import Link from React Router.
-// Link lets the user navigate to another route
-// without refreshing the whole application.
+// useState allows this page to remember:
+// 1. The user's search text
+// 2. The selected status filter
+import { useState } from "react";
+
+// Link lets the user navigate without refreshing the page.
 import { Link } from "react-router-dom";
 
-// Import our reusable StatusBadge component.
+// Reusable components and utilities.
 import StatusBadge from "../components/StatusBadge.jsx";
-
-// Import our reusable date calculation function.
 import { calculateDaysRemaining } from "../utils/dateUtils.js";
 
 // =========================================================
@@ -22,13 +23,112 @@ import { calculateDaysRemaining } from "../utils/dateUtils.js";
 
 // Receive the contracts list from App.jsx.
 //
-// Notice:
-// We no longer receive deleteContract.
-//
 // BUSINESS RULE:
 // Contracts are historical business records.
 // They cannot be deleted, even after they expire.
-function ContractsPage({ contracts }) {
+function ContractsPage({ contracts, loading, error }) {
+  // =========================================================
+  // SEARCH STATE
+  // =========================================================
+
+  // Store what the user types into the search box.
+  const [searchTerm, setSearchTerm] = useState("");
+
+  // =========================================================
+  // STATUS FILTER STATE
+  // =========================================================
+
+  // Store the selected status.
+  //
+  // Possible values:
+  // "All"
+  // "Active"
+  // "Expiring Soon"
+  // "Expired"
+  const [statusFilter, setStatusFilter] = useState("All");
+
+  // =========================================================
+  // LOADING STATE
+  // =========================================================
+
+  // While App.jsx is fetching contracts from the API,
+  // display a loading message.
+  if (loading) {
+    return (
+      <main>
+        <h1>Contracts</h1>
+
+        <p>Loading contracts...</p>
+      </main>
+    );
+  }
+
+  // =========================================================
+  // ERROR STATE
+  // =========================================================
+
+  // If the contracts API request failed,
+  // display the friendly error message from App.jsx.
+  if (error) {
+    return (
+      <main>
+        <h1>Contracts</h1>
+
+        <p>{error}</p>
+      </main>
+    );
+  }
+
+  // =========================================================
+  // FILTER CONTRACTS
+  // =========================================================
+
+  // A contract must pass BOTH:
+  //
+  // 1. Search check
+  // 2. Status check
+  //
+  // before it is displayed.
+  const filteredContracts = contracts.filter((contract) => {
+    // Convert the search text to lowercase
+    // so searching is case-insensitive.
+    const search = searchTerm.toLowerCase();
+
+    // =======================================================
+    // SEARCH CHECK
+    // =======================================================
+
+    // Check the customer/company name.
+    const matchesCustomer = contract.customer.toLowerCase().includes(search);
+
+    // Check the contract name.
+    const matchesContractName = contract.contractName
+      .toLowerCase()
+      .includes(search);
+
+    // Search passes when either the customer name
+    // OR contract name contains the search text.
+    const matchesSearch = matchesCustomer || matchesContractName;
+
+    // =======================================================
+    // STATUS CHECK
+    // =======================================================
+
+    // If "All" is selected, every status passes.
+    //
+    // Otherwise, the contract status must exactly
+    // match the selected status.
+    const matchesStatus =
+      statusFilter === "All" || contract.status === statusFilter;
+
+    // =======================================================
+    // FINAL RESULT
+    // =======================================================
+
+    // BOTH conditions must be true.
+    return matchesSearch && matchesStatus;
+  });
+
   return (
     <main>
       {/* =====================================================
@@ -43,39 +143,76 @@ function ContractsPage({ contracts }) {
           ADD CONTRACT ACTION
           ===================================================== */}
 
-      {/* Navigate to the page for creating a new contract. */}
-      <Link
-        to="/contracts/new"
-        className="add-contract-button"
-      >
+      <Link to="/contracts/new" className="add-contract-button">
         + Add Contract
       </Link>
+
+      {/* =====================================================
+          SEARCH AND FILTER CONTROLS
+          ===================================================== */}
+
+      <div className="contract-filters">
+        {/* ===================================================
+            SEARCH
+            =================================================== */}
+
+        <div className="form-group">
+          <label htmlFor="contractSearch">Search Contracts</label>
+
+          <input
+            type="text"
+            id="contractSearch"
+            value={searchTerm}
+            onChange={(event) => setSearchTerm(event.target.value)}
+            placeholder="Search by customer or contract name..."
+          />
+        </div>
+
+        {/* ===================================================
+            STATUS FILTER
+            =================================================== */}
+
+        <div className="form-group">
+          <label htmlFor="statusFilter">Filter by Status</label>
+
+          <select
+            id="statusFilter"
+            value={statusFilter}
+            onChange={(event) => setStatusFilter(event.target.value)}
+          >
+            <option value="All">All</option>
+
+            <option value="Active">Active</option>
+
+            <option value="Expiring Soon">Expiring Soon</option>
+
+            <option value="Expired">Expired</option>
+          </select>
+        </div>
+      </div>
+
+      {/* =====================================================
+          RESULT COUNT
+          ===================================================== */}
+
+      {/* Show how many contracts match the current filters. */}
+      <p>
+        Showing {filteredContracts.length} of {contracts.length} contracts
+      </p>
 
       {/* =====================================================
           CONTRACT LIST
           ===================================================== */}
 
       <div className="contracts-list">
-        {/*
-          .map() goes through every contract
-          inside the contracts array.
-
-          For each contract, React creates
-          one contract card.
-        */}
-        {contracts.map((contract) => (
-          <div
-            className="contract-card"
-            key={contract.id}
-          >
+        {filteredContracts.map((contract) => (
+          <div className="contract-card" key={contract.id}>
             {/* =================================================
                 CONTRACT HEADER
                 ================================================= */}
 
-            {/* Customer / company name */}
             <h2>{contract.customer}</h2>
 
-            {/* Name of the contract */}
             <h3>{contract.contractName}</h3>
 
             {/* =================================================
@@ -83,67 +220,45 @@ function ContractsPage({ contracts }) {
                 ================================================= */}
 
             <div className="contract-details">
-              {/* Contract start date */}
+              {/* Start date */}
               <p>
-                <strong>Start:</strong>{" "}
-                {contract.startDate}
+                <strong>Start:</strong> {contract.startDate}
               </p>
 
-              {/* Contract expiry date */}
+              {/* Expiry date */}
               <p>
-                <strong>Expiry:</strong>{" "}
-                {contract.expiryDate}
+                <strong>Expiry:</strong> {contract.expiryDate}
               </p>
 
               {/* =================================================
                   DAYS REMAINING / EXPIRED DAYS
                   ================================================= */}
 
-              {/*
-                calculateDaysRemaining() returns:
-
-                Positive number:
-                Contract has not expired.
-
-                Negative number:
-                Contract has already expired.
-              */}
               <p>
                 <strong>
                   {calculateDaysRemaining(contract.expiryDate) < 0
                     ? "Expired:"
                     : "Days Remaining:"}
                 </strong>{" "}
-
                 {calculateDaysRemaining(contract.expiryDate) < 0
                   ? `${Math.abs(
                       calculateDaysRemaining(contract.expiryDate),
                     )} days ago`
-                  : `${calculateDaysRemaining(
-                      contract.expiryDate,
-                    )} days`}
+                  : `${calculateDaysRemaining(contract.expiryDate)} days`}
               </p>
 
               {/* =================================================
                   CONTRACT VALUE
                   ================================================= */}
 
-              {/* 
-                toLocaleString() adds commas to numbers.
-
-                Example:
-                24000 becomes 24,000
-              */}
               <p>
-                <strong>Value:</strong>{" "}
-                ${contract.value.toLocaleString()}
+                <strong>Value:</strong> ${contract.value.toLocaleString()}
               </p>
 
               {/* =================================================
                   CONTRACT STATUS
                   ================================================= */}
 
-              {/* Reuse our StatusBadge component. */}
               <p>
                 <strong>Status:</strong>{" "}
                 <StatusBadge status={contract.status} />
@@ -155,11 +270,7 @@ function ContractsPage({ contracts }) {
                 ================================================= */}
 
             <div className="contract-actions">
-              {/* -----------------------------------------------
-                  VIEW CONTRACT
-                  ----------------------------------------------- */}
-
-              {/* Open the details page for this contract. */}
+              {/* View contract */}
               <Link
                 to={`/contracts/${contract.id}`}
                 className="contract-action-link"
@@ -167,11 +278,7 @@ function ContractsPage({ contracts }) {
                 View
               </Link>
 
-              {/* -----------------------------------------------
-                  EDIT CONTRACT
-                  ----------------------------------------------- */}
-
-              {/* Open the Edit page for this contract. */}
+              {/* Edit contract */}
               <Link
                 to={`/contracts/${contract.id}/edit`}
                 className="contract-action-link"
@@ -179,25 +286,36 @@ function ContractsPage({ contracts }) {
                 Edit
               </Link>
 
-              {/* -----------------------------------------------
+              {/* =================================================
                   NO DELETE BUTTON
-                  -----------------------------------------------
 
                   BUSINESS RULE:
-
                   Contracts cannot be deleted.
-
-                  This includes:
-                  - Active contracts
-                  - Expiring Soon contracts
-                  - Expired contracts
-
-                  We keep expired contracts because they are
-                  historical business records.
-              */}
+                  ================================================= */}
             </div>
           </div>
         ))}
+
+        {/* =====================================================
+    EMPTY / NO MATCHING RESULTS
+    ===================================================== */}
+
+        {/* 
+  There are two different situations:
+
+  1. contracts.length === 0
+     The database contains no contracts at all.
+
+  2. filteredContracts.length === 0
+     Contracts exist, but none match the current
+     search or status filter.
+*/}
+
+        {contracts.length === 0 ? (
+          <p>No contracts found. Add your first contract.</p>
+        ) : filteredContracts.length === 0 ? (
+          <p>No contracts match your search or status filter.</p>
+        ) : null}
       </div>
     </main>
   );
@@ -207,5 +325,4 @@ function ContractsPage({ contracts }) {
 // EXPORT
 // =========================================================
 
-// Export the page so React Router can display it.
 export default ContractsPage;

@@ -413,30 +413,6 @@ aside nav a.active {
   background-color: #f3f4f6;
 }
 
-/* =========================================================
-   CONTRACT ACTION LINK
-   ========================================================= */
-
-/* Make the React Router View link look like our buttons. */
-.contract-action-link {
-  padding: 8px 14px;
-
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-
-  background-color: white;
-  color: #1f2937;
-
-  text-decoration: none;
-  font-size: 13px;
-
-  cursor: pointer;
-}
-
-/* Give the View link the same hover effect as the buttons. */
-.contract-action-link:hover {
-  background-color: #f3f4f6;
-}
 
 /* =========================================================
    CONTRACT DETAILS PAGE
@@ -579,4 +555,155 @@ aside nav a.active {
 
 .submit-button:hover {
   background-color: #1d4ed8;
+}
+
+/* =========================================================
+   CONTRACT SEARCH AND FILTER
+   ========================================================= */
+
+/*
+  Place the Search and Status Filter controls
+  next to each other on larger screens.
+*/
+.contract-filters {
+  display: flex;
+  gap: 20px;
+  margin-top: 24px;
+  margin-bottom: 16px;
+  align-items: flex-end;
+}
+
+/*
+  Give each filter a sensible width instead
+  of stretching across the whole page.
+*/
+.contract-filters .form-group {
+  width: 300px;
+  margin-bottom: 0;
+}
+
+/*
+  Make the input and select fill their
+  individual filter containers.
+*/
+.contract-filters input,
+.contract-filters select {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   CUSTOMER SEARCH
+   ========================================================= */
+
+/*
+  Keep the customer search box at a sensible width
+  instead of stretching across the whole page.
+*/
+.customer-search {
+  width: 300px;
+  margin-top: 24px;
+  margin-bottom: 16px;
+}
+
+/*
+  Make the input fill the customer-search container.
+*/
+.customer-search input {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* =========================================================
+   DISABLED ACTION BUTTON
+   ========================================================= */
+
+/*
+  Customers with existing contracts cannot be deleted.
+
+  Make the disabled Delete button visually different
+  so the user understands that the action is unavailable.
+*/
+.contract-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background-color: #f3f4f6;
+}
+
+/*
+  Prevent the normal hover effect from making
+  a disabled button look clickable.
+*/
+.contract-actions button:disabled:hover {
+  background-color: #f3f4f6;
+}
+
+/* =========================================================
+   CUSTOMER TABLE
+   ========================================================= */
+
+/*
+  Allow horizontal scrolling on smaller screens
+  instead of breaking the page layout.
+*/
+.customer-table-container {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 16px;
+}
+
+/*
+  Main customer table.
+*/
+.customer-table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  border: 1px solid #e5e7eb;
+}
+
+/*
+  Table header and table cells.
+*/
+.customer-table th,
+.customer-table td {
+  padding: 14px 16px;
+  text-align: left;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/*
+  Give the table header a subtle background.
+*/
+.customer-table th {
+  background-color: #f9fafb;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+/*
+  Customer information.
+*/
+.customer-table td {
+  font-size: 14px;
+  color: #4b5563;
+}
+
+/*
+  Keep the action buttons together.
+*/
+.customer-table .contract-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 0;
+  flex-wrap: nowrap;
+}
+
+/*
+  Highlight a row slightly when the user
+  moves the mouse over it.
+*/
+.customer-table tbody tr:hover {
+  background-color: #f9fafb;
 }

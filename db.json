@@ -27,15 +27,10 @@
       "contactPerson": "Emily Wong",
       "email": "emily.wong@sunrise.com",
       "phone": "+65 6456 7890"
-    },
-    {
-      "companyName": "Test",
-      "contactPerson": "Tester",
-      "email": "test@gmail.com",
-      "phone": "656767667",
-      "id": "uMPspZ1UUJE"
     }
+    
   ],
+
   "contracts": [
     {
       "id": "1",
@@ -76,17 +71,9 @@
       "expiryDate": "2026-06-30",
       "value": 12000,
       "status": "Expired"
-    },
-    {
-      "id": "qYvXtzoNxpA",
-      "customerId": "uMPspZ1UUJE",
-      "customer": "Test",
-      "contractName": "Test Annual Contract",
-      "startDate": "2026-09-16",
-      "expiryDate": "2026-09-24",
-      "value": 67,
-      "status": "Active"
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+    
+      ]
+  
+
 }

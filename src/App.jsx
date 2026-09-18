@@ -11,12 +11,7 @@
 import { useEffect, useState } from "react";
 
 // Import React Router components.
-import {
-  BrowserRouter,
-  Routes,
-  Route,
-  Navigate,
-} from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 // =========================================================
 // LAYOUT
@@ -57,7 +52,6 @@ import EditContractPage from "./pages/EditContractPage.jsx";
 // http://localhost:3001
 const API_BASE = "http://localhost:3001";
 
-
 // =========================================================
 // APP COMPONENT
 // =========================================================
@@ -68,378 +62,391 @@ function App() {
   // =========================================================
 
   // Store all contracts loaded from the API.
-  //
-  // Start with an empty array.
-  // useEffect will load the contracts from json-server.
   const [contracts, setContracts] = useState([]);
 
   // Store all customers loaded from the API.
-  //
-  // Start with an empty array.
-  // useEffect will load the customers from json-server.
   const [customers, setCustomers] = useState([]);
-  
-// =========================================================
-// LOAD CUSTOMERS FROM API
-// =========================================================
 
-// useEffect runs after App is first displayed.
-//
-// The empty dependency array [] means:
-// run this effect when the application first loads.
-useEffect(() => {
-  // Create an async function so we can use await.
-  const loadCustomers = async () => {
+  // =========================================================
+  // LOADING STATE
+  // =========================================================
+
+  // true means the customer API request
+  // has not finished yet.
+  const [customersLoading, setCustomersLoading] = useState(true);
+
+  // true means the contract API request
+  // has not finished yet.
+  const [contractsLoading, setContractsLoading] = useState(true);
+
+  // =========================================================
+  // ERROR STATE
+  // =========================================================
+
+  // Store an error message if customers
+  // cannot be loaded from the API.
+  const [customersError, setCustomersError] = useState(null);
+
+  // Store an error message if contracts
+  // cannot be loaded from the API.
+  const [contractsError, setContractsError] = useState(null);
+
+  // =========================================================
+  // LOAD CUSTOMERS FROM API
+  // =========================================================
+
+  // useEffect runs when the application first loads.
+  useEffect(() => {
+    const loadCustomers = async () => {
+      try {
+        // The request is starting.
+        setCustomersLoading(true);
+
+        // Clear any previous error before
+        setCustomersError(null);
+
+        // GET /customers
+        const response = await fetch(`${API_BASE}/customers`);
+
+        // Check for an unsuccessful response.
+        if (!response.ok) {
+          throw new Error(`Failed to load customers: ${response.status}`);
+        }
+
+        // Convert JSON into JavaScript data.
+        const data = await response.json();
+
+        // Store the customers in React state.
+        setCustomers(data);
+      } catch (error) {
+        // Keep the technical error in the console
+        // for developers.
+        console.error("Error loading customers:", error);
+
+        // Store a friendly message that can
+        // be displayed to the user.
+        setCustomersError("Unable to load customers. Please try again later.");
+      } finally {
+        // finally runs whether the request
+        // succeeds OR fails.
+        //
+        // The request is now finished.
+        setCustomersLoading(false);
+      }
+    };
+
+    loadCustomers();
+  }, []);
+
+  // =========================================================
+  // LOAD CONTRACTS FROM API
+  // =========================================================
+
+  useEffect(() => {
+    const loadContracts = async () => {
+      try {
+        // The request is starting.
+        setContractsLoading(true);
+
+        // Clear any previous contract error.
+        setContractsError(null);
+
+        // GET /contracts
+        const response = await fetch(`${API_BASE}/contracts`);
+
+        // Check for an unsuccessful response.
+        if (!response.ok) {
+          throw new Error(`Failed to load contracts: ${response.status}`);
+        }
+
+        // Convert JSON into JavaScript data.
+        const data = await response.json();
+
+        // Store the contracts in React state.
+        setContracts(data);
+      } catch (error) {
+        // Keep the technical error in the console
+        // for developers.
+        console.error("Error loading contracts:", error);
+
+        // Store a friendly error message.
+        setContractsError("Unable to load contracts. Please try again later.");
+      } finally {
+        // The request has finished.
+        setContractsLoading(false);
+      }
+    };
+
+    loadContracts();
+  }, []);
+
+  // =========================================================
+  // ADD CUSTOMER
+  // =========================================================
+
+  // This function receives a new customer from
+  // NewCustomerPage and saves it to our API.
+  const addCustomer = async (newCustomer) => {
     try {
-      // Send a GET request to:
+      // Send a POST request to:
       // http://localhost:3001/customers
-      const response = await fetch(`${API_BASE}/customers`);
+      //
+      // json-server will save this customer
+      // inside db.json.
+      const response = await fetch(`${API_BASE}/customers`, {
+        method: "POST",
 
-      // Check whether the server returned an error.
-      if (!response.ok) {
-        throw new Error(
-          `Failed to load customers: ${response.status}`,
-        );
-      }
-
-      // Convert the JSON response into JavaScript data.
-      const data = await response.json();
-
-      // Replace the temporary customer state
-      // with customers from db.json.
-      setCustomers(data);
-    } catch (error) {
-      // For now, show API errors in the browser console.
-      console.error("Error loading customers:", error);
-    }
-  };
-
-  // Run the function.
-  loadCustomers();
-}, []);
-
-// =========================================================
-// LOAD CONTRACTS FROM API
-// =========================================================
-
-// Load all contracts from json-server
-// when the application first starts.
-useEffect(() => {
-  // Create an async function so we can use await.
-  const loadContracts = async () => {
-    try {
-      // Send a GET request to:
-      // http://localhost:3001/contracts
-      const response = await fetch(`${API_BASE}/contracts`);
-
-      // Check whether the request was successful.
-      if (!response.ok) {
-        throw new Error(
-          `Failed to load contracts: ${response.status}`,
-        );
-      }
-
-      // Convert the JSON response into JavaScript data.
-      const data = await response.json();
-
-      // Replace the temporary contracts state
-      // with the contracts stored in db.json.
-      setContracts(data);
-    } catch (error) {
-      // For now, display errors in the browser console.
-      console.error("Error loading contracts:", error);
-    }
-  };
-
-  // Run the function.
-  loadContracts();
-}, []);
-
-// =========================================================
-// ADD CUSTOMER
-// =========================================================
-
-// This function receives a new customer from
-// NewCustomerPage and saves it to our API.
-const addCustomer = async (newCustomer) => {
-  try {
-    // Send a POST request to:
-    // http://localhost:3001/customers
-    //
-    // json-server will save this customer
-    // inside db.json.
-    const response = await fetch(`${API_BASE}/customers`, {
-      method: "POST",
-
-      // Tell the server we are sending JSON data.
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      // Convert the JavaScript customer object
-      // into JSON before sending it.
-      body: JSON.stringify(newCustomer),
-    });
-
-    // Check whether the request succeeded.
-    if (!response.ok) {
-      throw new Error(
-        `Failed to add customer: ${response.status}`,
-      );
-    }
-
-    // json-server returns the newly created customer,
-    // including its generated ID.
-    const savedCustomer = await response.json();
-
-    // Add the saved customer to React state
-    // so the page updates immediately.
-    setCustomers((previousCustomers) => [
-      ...previousCustomers,
-      savedCustomer,
-    ]);
-  } catch (error) {
-    console.error("Error adding customer:", error);
-  }
-};
-
-  // =========================================================
-// UPDATE CUSTOMER
-// =========================================================
-
-// This function receives an updated customer from
-// EditCustomerPage and saves the changes to the API.
-const updateCustomer = async (updatedCustomer) => {
-  try {
-    // Send a PUT request to the specific customer.
-    //
-    // Example:
-    // PUT http://localhost:3001/customers/YtVYnJEHVYU
-    const response = await fetch(
-      `${API_BASE}/customers/${updatedCustomer.id}`,
-      {
-        method: "PUT",
-
-        // Tell the API that we are sending JSON.
+        // Tell the server we are sending JSON data.
         headers: {
           "Content-Type": "application/json",
         },
 
-        // Convert the updated customer object into JSON.
-        body: JSON.stringify(updatedCustomer),
-      },
-    );
-
-    // Check whether the API successfully updated the customer.
-    if (!response.ok) {
-      throw new Error(
-        `Failed to update customer: ${response.status}`,
-      );
-    }
-
-    // Get the saved customer back from json-server.
-    const savedCustomer = await response.json();
-
-    // Update React state so the screen changes immediately.
-    setCustomers((previousCustomers) =>
-      previousCustomers.map((customer) =>
-        String(customer.id) === String(savedCustomer.id)
-          ? savedCustomer
-          : customer,
-      ),
-    );
-  } catch (error) {
-    console.error("Error updating customer:", error);
-  }
-};
-
-// =========================================================
-// DELETE CUSTOMER
-// =========================================================
-
-// Delete a customer from the json-server API.
-//
-// BUSINESS RULE:
-// A customer can only be deleted when they have
-// NO contracts.
-//
-// CustomersPage already disables the Delete button
-// when a customer has contracts.
-//
-// We also check the rule here for extra protection.
-const deleteCustomer = async (customerId) => {
-  try {
-    // =======================================================
-    // CHECK WHETHER CUSTOMER HAS CONTRACTS
-    // =======================================================
-
-    // Look through the contracts array and check whether
-    // any contract belongs to this customer.
-    const hasContracts = contracts.some(
-      (contract) =>
-        String(contract.customerId) === String(customerId),
-    );
-
-    // If the customer has at least one contract,
-    // stop the delete operation.
-    if (hasContracts) {
-      console.error(
-        "Customer cannot be deleted because contracts exist.",
-      );
-
-      return;
-    }
-
-    // =======================================================
-    // DELETE CUSTOMER FROM API
-    // =======================================================
-
-    // Send a DELETE request to:
-    //
-    // http://localhost:3001/customers/:id
-    //
-    // Example:
-    // http://localhost:3001/customers/YtVYnJEHVYU
-    const response = await fetch(
-      `${API_BASE}/customers/${customerId}`,
-      {
-        method: "DELETE",
-      },
-    );
-
-    // Check whether the API successfully deleted
-    // the customer.
-    if (!response.ok) {
-      throw new Error(
-        `Failed to delete customer: ${response.status}`,
-      );
-    }
-
-    // =======================================================
-    // UPDATE REACT STATE
-    // =======================================================
-
-    // The customer has now been deleted from db.json.
-    //
-    // Remove the same customer from React state
-    // so the screen updates immediately.
-    setCustomers((previousCustomers) =>
-      previousCustomers.filter(
-        (customer) =>
-          String(customer.id) !== String(customerId),
-      ),
-    );
-  } catch (error) {
-    console.error("Error deleting customer:", error);
-  }
-};
-
- // =========================================================
-// ADD CONTRACT
-// =========================================================
-
-// Receive a new contract from NewContractPage
-// and save it permanently through our API.
-const addContract = async (newContract) => {
-  try {
-    // Send a POST request to the contracts API.
-    //
-    // POST means:
-    // "Create a new record."
-    const response = await fetch(`${API_BASE}/contracts`, {
-      method: "POST",
-
-      // Tell json-server that the data
-      // we are sending is JSON.
-      headers: {
-        "Content-Type": "application/json",
-      },
-
-      // Convert the JavaScript contract object
-      // into JSON before sending it to the API.
-      body: JSON.stringify(newContract),
-    });
-
-    // If the API request fails,
-    // create an error and jump to catch().
-    if (!response.ok) {
-      throw new Error(
-        `Failed to add contract: ${response.status}`,
-      );
-    }
-
-    // Convert the API response back into
-    // a JavaScript object.
-    //
-    // json-server will return the saved contract
-    // with its generated ID.
-    const savedContract = await response.json();
-
-    // Add the saved contract to React state
-    // so the page updates immediately.
-    setContracts((previousContracts) => [
-      ...previousContracts,
-      savedContract,
-    ]);
-  } catch (error) {
-    // Display any API error in the browser console.
-    console.error("Error adding contract:", error);
-  }
-};
-
-  // =========================================================
-// UPDATE CONTRACT
-// =========================================================
-
-// Receive an updated contract from EditContractPage
-// and save the changes permanently through the API.
-const updateContract = async (updatedContract) => {
-  try {
-    // Send a PUT request to the specific contract.
-    //
-    // Example:
-    // PUT http://localhost:3001/contracts/abc123
-    const response = await fetch(
-      `${API_BASE}/contracts/${updatedContract.id}`,
-      {
-        method: "PUT",
-
-        // Tell json-server that we are sending JSON.
-        headers: {
-          "Content-Type": "application/json",
-        },
-
-        // Convert the updated contract object
+        // Convert the JavaScript customer object
         // into JSON before sending it.
-        body: JSON.stringify(updatedContract),
-      },
-    );
+        body: JSON.stringify(newCustomer),
+      });
 
-    // Check whether the API successfully
-    // updated the contract.
-    if (!response.ok) {
-      throw new Error(
-        `Failed to update contract: ${response.status}`,
-      );
+      // Check whether the request succeeded.
+      if (!response.ok) {
+        throw new Error(`Failed to add customer: ${response.status}`);
+      }
+
+      // json-server returns the newly created customer,
+      // including its generated ID.
+      const savedCustomer = await response.json();
+
+      // Add the saved customer to React state
+      // so the page updates immediately.
+      setCustomers((previousCustomers) => [
+        ...previousCustomers,
+        savedCustomer,
+      ]);
+    } catch (error) {
+      console.error("Error adding customer:", error);
     }
+  };
 
-    // Get the updated contract returned by json-server.
-    const savedContract = await response.json();
+  // =========================================================
+  // UPDATE CUSTOMER
+  // =========================================================
 
-    // Update React state so the page
-    // changes immediately.
-    setContracts((previousContracts) =>
-      previousContracts.map((contract) =>
-        String(contract.id) === String(savedContract.id)
-          ? savedContract
-          : contract,
-      ),
-    );
-  } catch (error) {
-    console.error("Error updating contract:", error);
-  }
-};
+  // This function receives an updated customer from
+  // EditCustomerPage and saves the changes to the API.
+  const updateCustomer = async (updatedCustomer) => {
+    try {
+      // Send a PUT request to the specific customer.
+      //
+      // Example:
+      // PUT http://localhost:3001/customers/YtVYnJEHVYU
+      const response = await fetch(
+        `${API_BASE}/customers/${updatedCustomer.id}`,
+        {
+          method: "PUT",
 
+          // Tell the API that we are sending JSON.
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          // Convert the updated customer object into JSON.
+          body: JSON.stringify(updatedCustomer),
+        },
+      );
+
+      // Check whether the API successfully updated the customer.
+      if (!response.ok) {
+        throw new Error(`Failed to update customer: ${response.status}`);
+      }
+
+      // Get the saved customer back from json-server.
+      const savedCustomer = await response.json();
+
+      // Update React state so the screen changes immediately.
+      setCustomers((previousCustomers) =>
+        previousCustomers.map((customer) =>
+          String(customer.id) === String(savedCustomer.id)
+            ? savedCustomer
+            : customer,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating customer:", error);
+    }
+  };
+
+  // =========================================================
+  // DELETE CUSTOMER
+  // =========================================================
+
+  // Delete a customer from the json-server API.
+  //
+  // BUSINESS RULE:
+  // A customer can only be deleted when they have
+  // NO contracts.
+  //
+  // CustomersPage already disables the Delete button
+  // when a customer has contracts.
+  //
+  // We also check the rule here for extra protection.
+  const deleteCustomer = async (customerId) => {
+    try {
+      // =======================================================
+      // CHECK WHETHER CUSTOMER HAS CONTRACTS
+      // =======================================================
+
+      // Look through the contracts array and check whether
+      // any contract belongs to this customer.
+      const hasContracts = contracts.some(
+        (contract) => String(contract.customerId) === String(customerId),
+      );
+
+      // If the customer has at least one contract,
+      // stop the delete operation.
+      if (hasContracts) {
+        console.error("Customer cannot be deleted because contracts exist.");
+
+        return;
+      }
+
+      // =======================================================
+      // DELETE CUSTOMER FROM API
+      // =======================================================
+
+      // Send a DELETE request to:
+      //
+      // http://localhost:3001/customers/:id
+      //
+      // Example:
+      // http://localhost:3001/customers/YtVYnJEHVYU
+      const response = await fetch(`${API_BASE}/customers/${customerId}`, {
+        method: "DELETE",
+      });
+
+      // Check whether the API successfully deleted
+      // the customer.
+      if (!response.ok) {
+        throw new Error(`Failed to delete customer: ${response.status}`);
+      }
+
+      // =======================================================
+      // UPDATE REACT STATE
+      // =======================================================
+
+      // The customer has now been deleted from db.json.
+      //
+      // Remove the same customer from React state
+      // so the screen updates immediately.
+      setCustomers((previousCustomers) =>
+        previousCustomers.filter(
+          (customer) => String(customer.id) !== String(customerId),
+        ),
+      );
+    } catch (error) {
+      console.error("Error deleting customer:", error);
+    }
+  };
+
+  // =========================================================
+  // ADD CONTRACT
+  // =========================================================
+
+  // Receive a new contract from NewContractPage
+  // and save it permanently through our API.
+  const addContract = async (newContract) => {
+    try {
+      // Send a POST request to the contracts API.
+      //
+      // POST means:
+      // "Create a new record."
+      const response = await fetch(`${API_BASE}/contracts`, {
+        method: "POST",
+
+        // Tell json-server that the data
+        // we are sending is JSON.
+        headers: {
+          "Content-Type": "application/json",
+        },
+
+        // Convert the JavaScript contract object
+        // into JSON before sending it to the API.
+        body: JSON.stringify(newContract),
+      });
+
+      // If the API request fails,
+      // create an error and jump to catch().
+      if (!response.ok) {
+        throw new Error(`Failed to add contract: ${response.status}`);
+      }
+
+      // Convert the API response back into
+      // a JavaScript object.
+      //
+      // json-server will return the saved contract
+      // with its generated ID.
+      const savedContract = await response.json();
+
+      // Add the saved contract to React state
+      // so the page updates immediately.
+      setContracts((previousContracts) => [
+        ...previousContracts,
+        savedContract,
+      ]);
+    } catch (error) {
+      // Display any API error in the browser console.
+      console.error("Error adding contract:", error);
+    }
+  };
+
+  // =========================================================
+  // UPDATE CONTRACT
+  // =========================================================
+
+  // Receive an updated contract from EditContractPage
+  // and save the changes permanently through the API.
+  const updateContract = async (updatedContract) => {
+    try {
+      // Send a PUT request to the specific contract.
+      //
+      // Example:
+      // PUT http://localhost:3001/contracts/abc123
+      const response = await fetch(
+        `${API_BASE}/contracts/${updatedContract.id}`,
+        {
+          method: "PUT",
+
+          // Tell json-server that we are sending JSON.
+          headers: {
+            "Content-Type": "application/json",
+          },
+
+          // Convert the updated contract object
+          // into JSON before sending it.
+          body: JSON.stringify(updatedContract),
+        },
+      );
+
+      // Check whether the API successfully
+      // updated the contract.
+      if (!response.ok) {
+        throw new Error(`Failed to update contract: ${response.status}`);
+      }
+
+      // Get the updated contract returned by json-server.
+      const savedContract = await response.json();
+
+      // Update React state so the page
+      // changes immediately.
+      setContracts((previousContracts) =>
+        previousContracts.map((contract) =>
+          String(contract.id) === String(savedContract.id)
+            ? savedContract
+            : contract,
+        ),
+      );
+    } catch (error) {
+      console.error("Error updating contract:", error);
+    }
+  };
 
   // =========================================================
   // NO DELETE CONTRACT FUNCTION
@@ -476,10 +483,7 @@ const updateContract = async (updatedContract) => {
             =================================================== */}
 
         {/* Redirect "/" to the Dashboard. */}
-        <Route
-          path="/"
-          element={<Navigate to="/dashboard" replace />}
-        />
+        <Route path="/" element={<Navigate to="/dashboard" replace />} />
 
         {/* ===================================================
             ROOT LAYOUT
@@ -487,26 +491,23 @@ const updateContract = async (updatedContract) => {
 
         {/* All routes below appear inside RootLayout. */}
         <Route element={<RootLayout />}>
-    {/* =================================================
+          {/* =================================================
         DASHBOARD
         ================================================= */}
 
-    {/* Pass the shared customers and contracts
+          {/* Pass the shared customers and contracts
         data to DashboardPage.
 
         This allows the Dashboard to calculate
         statistics from the actual application data
         instead of using hard-coded numbers.
     */}
-    <Route
-      path="/dashboard"
-      element={
-        <DashboardPage
-          customers={customers}
-          contracts={contracts}
-        />
-      }
-    />
+          <Route
+            path="/dashboard"
+            element={
+              <DashboardPage customers={customers} contracts={contracts} />
+            }
+          />
           {/* =================================================
               CUSTOMERS
               ================================================= */}
@@ -524,6 +525,7 @@ const updateContract = async (updatedContract) => {
               Used to delete customers that
               have NO contracts.
           */}
+
           <Route
             path="/customers"
             element={
@@ -531,6 +533,10 @@ const updateContract = async (updatedContract) => {
                 customers={customers}
                 contracts={contracts}
                 deleteCustomer={deleteCustomer}
+                // Pass loading state to CustomersPage.
+                loading={customersLoading}
+                // Pass API error state to CustomersPage.
+                error={customersError}
               />
             }
           />
@@ -542,11 +548,7 @@ const updateContract = async (updatedContract) => {
           {/* Page for creating a new customer. */}
           <Route
             path="/customers/new"
-            element={
-              <NewCustomerPage
-                addCustomer={addCustomer}
-              />
-            }
+            element={<NewCustomerPage addCustomer={addCustomer} />}
           />
 
           {/* =================================================
@@ -566,10 +568,7 @@ const updateContract = async (updatedContract) => {
           <Route
             path="/customers/:customerId"
             element={
-              <CustomerDetailPage
-                customers={customers}
-                contracts={contracts}
-              />
+              <CustomerDetailPage customers={customers} contracts={contracts} />
             }
           />
 
@@ -610,6 +609,10 @@ const updateContract = async (updatedContract) => {
             element={
               <ContractsPage
                 contracts={contracts}
+                // Pass loading state to ContractsPage.
+                loading={contractsLoading}
+                // Pass API error state to ContractsPage.
+                error={contractsError}
               />
             }
           />
@@ -649,11 +652,7 @@ const updateContract = async (updatedContract) => {
           */}
           <Route
             path="/contracts/:contractId"
-            element={
-              <ContractDetailPage
-                contracts={contracts}
-              />
-            }
+            element={<ContractDetailPage contracts={contracts} />}
           />
 
           {/* =================================================
