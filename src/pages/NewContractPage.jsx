@@ -10,22 +10,22 @@ import { useState } from "react";
 // after an action such as submitting a form.
 import { Link, useNavigate } from "react-router-dom";
 // Receive the addContract function from App.jsx through props.
-function NewContractPage({ addContract }) {
-
-    // =========================================================
+function NewContractPage({ addContract, customers }) {
+  // =========================================================
   // NAVIGATION
   // =========================================================
 
   // useNavigate gives us a function that can
   // change the current route using JavaScript.
   const navigate = useNavigate();
-  
+
   // =========================================================
   // FORM STATE
   // =========================================================
 
   // Store all values entered into the Add Contract form.
   const [formData, setFormData] = useState({
+    customerId: "",
     customer: "",
     contractName: "",
     startDate: "",
@@ -55,37 +55,64 @@ function NewContractPage({ addContract }) {
   };
 
   // =========================================================
-  // HANDLE FORM SUBMISSION
+// HANDLE FORM SUBMISSION
+// =========================================================
+
+// This function runs when the user submits the form.
+const handleSubmit = (event) => {
+  // Prevent the browser from refreshing the page.
+  event.preventDefault();
+
+  // =========================================================
+  // FIND THE SELECTED CUSTOMER
   // =========================================================
 
-  // This function runs when the user submits the form.
-  const handleSubmit = (event) => {
-    // Prevent the browser from refreshing the page.
-    event.preventDefault();
+  // Find the full customer record that matches
+  // the customer selected in the dropdown.
+  //
+  // The value from a <select> is a string,
+  // so Number() converts it into a number.
+  const selectedCustomer = customers.find(
+    (customer) => customer.id === Number(formData.customerId),
+  );
 
-    // Create a new contract object using the form values.
-    const newContract = {
-      customer: formData.customer,
-      contractName: formData.contractName,
-      startDate: formData.startDate,
-      expiryDate: formData.expiryDate,
+  // =========================================================
+  // CREATE THE NEW CONTRACT
+  // =========================================================
 
-      // Form inputs return strings.
-      // Convert the contract value into a number.
-      value: Number(formData.value),
+  // Create a new contract object using the form values.
+  const newContract = {
+    // Store the customer's ID.
+    // This creates the relationship between
+    // the customer and this contract.
+    customerId: Number(formData.customerId),
 
-      status: formData.status,
-    };
+    // Store the customer's company name
+    // so we can easily display it in the Contracts page.
+    customer: selectedCustomer.companyName,
 
-// Send the new contract to App.jsx.
-// App.jsx will add it to the shared contracts state.
-addContract(newContract);
+    contractName: formData.contractName,
+    startDate: formData.startDate,
+    expiryDate: formData.expiryDate,
 
-// After successfully adding the contract,
-// navigate back to the Contracts page.
-navigate("/contracts");
+    // Form inputs return strings.
+    // Convert the contract value into a number.
+    value: Number(formData.value),
 
+    status: formData.status,
   };
+
+  // =========================================================
+  // ADD THE CONTRACT
+  // =========================================================
+
+  // Send the new contract to App.jsx.
+  // App.jsx will add it to the shared contracts state.
+  addContract(newContract);
+
+  // Return to the Contracts page after adding.
+  navigate("/contracts");
+};
 
   // Display
 
@@ -108,26 +135,38 @@ navigate("/contracts");
           ADD CONTRACT FORM
           ===================================================== */}
 
-      <form
-        className="contract-form"
-        onSubmit={handleSubmit}
-      >
+      <form className="contract-form" onSubmit={handleSubmit}>
         {/* Customer / company name */}
-        <div className="form-group">
-          <label htmlFor="customer">Customer</label>
 
-          <input
-            type="text"
-            id="customer"
-            name="customer"
-            // The input displays the customer value
-            // stored inside formData.
-            value={formData.customer}
-            // Use our reusable handleChange function.
+        {/* =====================================================
+    CUSTOMER SELECTION
+    ===================================================== */}
+
+        <div className="form-group">
+          <label htmlFor="customerId">Customer</label>
+
+          {/* Instead of manually typing a company name,
+      select an existing customer from our customer list. */}
+          <select
+            id="customerId"
+            name="customerId"
+            value={formData.customerId}
             onChange={handleChange}
-            placeholder="e.g. ABC Pte Ltd"
-          />
+            required
+          >
+            {/* Default option */}
+            <option value="">Select a customer</option>
+
+            {/* Create one option for every customer
+        stored in the customers array. */}
+            {customers.map((customer) => (
+              <option key={customer.id} value={customer.id}>
+                {customer.companyName}
+              </option>
+            ))}
+          </select>
         </div>
+
         {/* Contract name */}
         <div className="form-group">
           <label htmlFor="contractName">Contract Name</label>
@@ -203,15 +242,9 @@ navigate("/contracts");
     FORM ACTION
     ===================================================== */}
 
-        <button
-          type="submit"
-          className="submit-button"
-        >
+        <button type="submit" className="submit-button">
           Add Contract
         </button>
-
-
-
       </form>
 
       {/* The contract form will be added in the next step. */}

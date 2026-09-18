@@ -357,14 +357,14 @@ aside nav a.active {
    CONTRACT ACTION BUTTONS
    ========================================================= */
 
+/* Place View, Edit and Delete beside each other
+   with equal spacing between them. */
 .contract-actions {
   display: flex;
-
-  gap: 10px;
-
+  align-items: center;
+  gap: 12px;
   margin-top: 20px;
 }
-
 
 /* Basic button appearance. */
 .contract-actions button {
@@ -375,12 +375,41 @@ aside nav a.active {
 
   background-color: white;
 
+  font-size: 13px;
+
   cursor: pointer;
 }
 
-
 /* Give the user visual feedback when hovering. */
 .contract-actions button:hover {
+  background-color: #f3f4f6;
+}
+
+/* =========================================================
+   CONTRACT ACTION LINK
+   ========================================================= */
+
+/* Make the React Router View/Edit links
+   look like our buttons. */
+.contract-action-link {
+  display: inline-block;
+
+  padding: 8px 14px;
+
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+
+  background-color: white;
+  color: #1f2937;
+
+  text-decoration: none;
+  font-size: 13px;
+
+  cursor: pointer;
+}
+
+/* Give the View/Edit links the same hover effect. */
+.contract-action-link:hover {
   background-color: #f3f4f6;
 }
 

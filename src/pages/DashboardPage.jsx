@@ -1,44 +1,69 @@
 // DashboardPage.jsx
 // This component represents the main Dashboard page of RenewTrack.
 
+// =========================================================
+// IMPORTS
+// =========================================================
+
 // Import our reusable StatCard component.
 import StatCard from "../components/StatCard.jsx";
 
 // Import the reusable StatusBadge component.
 import StatusBadge from "../components/StatusBadge.jsx";
 
-function DashboardPage() {
-  // =========================================================
-  // SAMPLE CONTRACT DATA
-  // =========================================================
-  // For now, this data is stored directly inside this component.
-  //
-  // Later, we will replace this sample data with contract data
-  // fetched from our API.
+// =========================================================
+// DASHBOARD COMPONENT
+// =========================================================
 
-  const upcomingRenewals = [
-    {
-      id: 1,
-      customer: "ABC Pte Ltd",
-      contractName: "IT Maintenance Contract",
-      expiryDate: "31 Dec 2026",
-      status: "Active",
-    },
-    {
-      id: 2,
-      customer: "XYZ Engineering",
-      contractName: "Software Support Contract",
-      expiryDate: "15 Jan 2027",
-      status: "Expiring Soon",
-    },
-    {
-      id: 3,
-      customer: "DEF Solutions",
-      contractName: "Equipment Maintenance Contract",
-      expiryDate: "28 Feb 2027",
-      status: "Active",
-    },
-  ];
+// Receive the real customers and contracts arrays
+// from App.jsx through props.
+function DashboardPage({ customers, contracts }) {
+  // =========================================================
+  // CALCULATE DASHBOARD STATISTICS
+  // =========================================================
+
+  // Total number of customers.
+  const totalCustomers = customers.length;
+
+  // Total number of contracts.
+  const totalContracts = contracts.length;
+
+  // Count contracts whose status is "Active".
+  const activeContracts = contracts.filter(
+    (contract) => contract.status === "Active",
+  ).length;
+
+  // Count contracts whose status is "Expiring Soon".
+  const expiringSoonContracts = contracts.filter(
+    (contract) => contract.status === "Expiring Soon",
+  ).length;
+
+  // Count contracts whose status is "Expired".
+  const expiredContracts = contracts.filter(
+    (contract) => contract.status === "Expired",
+  ).length;
+
+// =========================================================
+// UPCOMING RENEWALS
+// =========================================================
+
+// Build the Upcoming Renewals list from the real
+// contracts array.
+//
+// 1. filter() removes expired contracts.
+// 2. spread [...] creates a new array.
+// 3. sort() puts the nearest expiry date first.
+//
+// We create a new array before sorting because sort()
+// changes the array it is used on. We do not want to
+// directly modify our React state.
+const upcomingRenewals = [...contracts]
+  .filter((contract) => contract.status !== "Expired")
+  .sort(
+    (a, b) =>
+      new Date(a.expiryDate) - new Date(b.expiryDate),
+  );
+  
 
   return (
     <main>
@@ -55,16 +80,35 @@ function DashboardPage() {
           ===================================================== */}
 
       <div className="stats-grid">
-        {/* These numbers are temporary sample values.
-            Later they will be calculated from API data. */}
+        {/* Display the real number of customers. */}
+        <StatCard
+          title="Total Customers"
+          value={totalCustomers}
+        />
 
-        <StatCard title="Total Contracts" value={18} />
+        {/* Display the real number of contracts. */}
+        <StatCard
+          title="Total Contracts"
+          value={totalContracts}
+        />
 
-        <StatCard title="Active Contracts" value={12} />
+        {/* Display contracts with Active status. */}
+        <StatCard
+          title="Active Contracts"
+          value={activeContracts}
+        />
 
-        <StatCard title="Expiring Soon" value={4} />
+        {/* Display contracts with Expiring Soon status. */}
+        <StatCard
+          title="Expiring Soon"
+          value={expiringSoonContracts}
+        />
 
-        <StatCard title="Expired" value={2} />
+        {/* Display contracts with Expired status. */}
+        <StatCard
+          title="Expired"
+          value={expiredContracts}
+        />
       </div>
 
       {/* =====================================================
@@ -72,12 +116,9 @@ function DashboardPage() {
           ===================================================== */}
 
       <section className="renewals-section">
-        {/* Section heading */}
         <h2>Upcoming Renewals</h2>
 
-        {/* Table used to display upcoming contract renewals */}
         <table className="renewals-table">
-          {/* Table headings */}
           <thead>
             <tr>
               <th>Customer</th>
@@ -88,24 +129,16 @@ function DashboardPage() {
           </thead>
 
           <tbody>
-            {/*
-              .map() goes through every contract inside
-              upcomingRenewals.
-
-              For each contract, React creates one table row.
-            */}
+            {/* This still uses temporary data.
+                We will replace it in Step 11C. */}
             {upcomingRenewals.map((contract) => (
               <tr key={contract.id}>
-                {/* Display the customer name */}
                 <td>{contract.customer}</td>
 
-                {/* Display the contract name */}
                 <td>{contract.contractName}</td>
 
-                {/* Display the expiry date */}
                 <td>{contract.expiryDate}</td>
 
-                {/* Display the current status using our reusable StatusBadge component. */}
                 <td>
                   <StatusBadge status={contract.status} />
                 </td>
@@ -117,6 +150,10 @@ function DashboardPage() {
     </main>
   );
 }
+
+// =========================================================
+// EXPORT
+// =========================================================
 
 // Export DashboardPage so React Router can display it.
 export default DashboardPage;

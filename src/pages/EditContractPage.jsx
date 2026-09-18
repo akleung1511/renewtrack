@@ -10,7 +10,13 @@ import { useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
 
 // Receive the shared contracts list from App.jsx.
-function EditContractPage({ contracts, updateContract }) {
+// Receive contracts, customers, and updateContract from App.jsx.
+function EditContractPage({
+  contracts,
+  customers,
+  updateContract,
+}) {
+
   // =========================================================
   // READ CONTRACT ID FROM URL
   // =========================================================
@@ -43,13 +49,18 @@ function EditContractPage({ contracts, updateContract }) {
   // Start the form with the existing values
   // from the selected contract.
   const [formData, setFormData] = useState({
-    customer: contract?.customer || "",
-    contractName: contract?.contractName || "",
-    startDate: contract?.startDate || "",
-    expiryDate: contract?.expiryDate || "",
-    value: contract?.value || "",
-    status: contract?.status || "Active",
-  });
+  // Store the ID of the customer connected to this contract.
+  customerId: contract?.customerId || "",
+
+  // Keep the customer name for display purposes.
+  customer: contract?.customer || "",
+
+  contractName: contract?.contractName || "",
+  startDate: contract?.startDate || "",
+  expiryDate: contract?.expiryDate || "",
+  value: contract?.value || "",
+  status: contract?.status || "Active",
+});
 
   // =========================================================
   // HANDLE FORM INPUT CHANGES
@@ -69,32 +80,64 @@ function EditContractPage({ contracts, updateContract }) {
     }));
   };
 
+  /// =========================================================
+// HANDLE FORM SUBMISSION
+// =========================================================
+
+// This function runs when the user clicks Save Changes.
+const handleSubmit = (event) => {
+  // Prevent the browser from refreshing.
+  event.preventDefault();
+
   // =========================================================
-  // HANDLE FORM SUBMISSION
+  // FIND THE SELECTED CUSTOMER
   // =========================================================
 
-  // This function runs when the user clicks Save Changes.
-  const handleSubmit = (event) => {
-    // Prevent the browser from refreshing.
-    event.preventDefault();
+  // Find the customer that matches the customerId
+  // selected in the dropdown.
+  //
+  // The value from a <select> is a string,
+  // so Number() converts it into a number.
+  const selectedCustomer = customers.find(
+    (customer) => customer.id === Number(formData.customerId),
+  );
 
-    // Create the updated contract.
-    const updatedContract = {
-      id: Number(contractId),
-      customer: formData.customer,
-      contractName: formData.contractName,
-      startDate: formData.startDate,
-      expiryDate: formData.expiryDate,
-      value: Number(formData.value),
-      status: formData.status,
-    };
+  // =========================================================
+  // CREATE THE UPDATED CONTRACT
+  // =========================================================
 
-    // Send the updated contract to App.jsx.
-    updateContract(updatedContract);
+  const updatedContract = {
+    // Keep the existing contract ID.
+    id: Number(contractId),
 
-    // Return to the Contracts page.
-    navigate("/contracts");
+    // Store the selected customer's ID.
+    // This maintains the relationship between
+    // the contract and the customer.
+    customerId: Number(formData.customerId),
+
+    // Store the selected customer's company name
+    // for display in the Contracts page.
+    customer: selectedCustomer.companyName,
+
+    // Store the rest of the edited form values.
+    contractName: formData.contractName,
+    startDate: formData.startDate,
+    expiryDate: formData.expiryDate,
+
+    // Form inputs return strings,
+    // so convert the value into a number.
+    value: Number(formData.value),
+
+    status: formData.status,
   };
+
+  // Send the updated contract to App.jsx.
+  updateContract(updatedContract);
+
+  // Return to the Contracts page.
+  navigate("/contracts");
+};
+
 
   return (
     <main>
@@ -117,17 +160,35 @@ function EditContractPage({ contracts, updateContract }) {
 
       <form className="contract-form" onSubmit={handleSubmit}>
         {/* Customer */}
-        <div className="form-group">
-          <label htmlFor="customer">Customer</label>
+        {/* =====================================================
+    CUSTOMER SELECTION
+    ===================================================== */}
 
-          <input
-            type="text"
-            id="customer"
-            name="customer"
-            value={formData.customer}
-            onChange={handleChange}
-          />
-        </div>
+<div className="form-group">
+  <label htmlFor="customerId">Customer</label>
+
+  {/* Select an existing customer instead of
+      manually typing the company name. */}
+  <select
+    id="customerId"
+    name="customerId"
+    value={formData.customerId}
+    onChange={handleChange}
+    required
+  >
+    <option value="">Select a customer</option>
+
+    {/* Create one option for every existing customer. */}
+    {customers.map((customer) => (
+      <option
+        key={customer.id}
+        value={customer.id}
+      >
+        {customer.companyName}
+      </option>
+    ))}
+  </select>
+</div>
 
         {/* Contract Name */}
         <div className="form-group">
