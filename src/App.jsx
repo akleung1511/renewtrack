@@ -1,18 +1,18 @@
 // App.jsx
-// This file manages shared application state,
-// API operations, authentication and routing for RenewTrack.
+// GitHub Pages deployment version of RenewTrack.
+//
+// This version uses localStorage instead of json-server.
+// This allows RenewTrack to run on GitHub Pages without
+// requiring a backend server.
 
 // =========================================================
 // IMPORTS
 // =========================================================
 
-import {
-  useEffect,
-  useState,
-} from "react";
+import { useEffect, useState } from "react";
 
 import {
-  BrowserRouter,
+  HashRouter,
   Routes,
   Route,
   Navigate,
@@ -23,7 +23,6 @@ import {
 // =========================================================
 
 import AuthProvider from "./context/AuthContext.jsx";
-
 import ProtectedRoute from "./components/ProtectedRoute.jsx";
 
 // =========================================================
@@ -36,37 +35,155 @@ import RootLayout from "./layouts/RootLayout.jsx";
 // PAGE IMPORTS
 // =========================================================
 
-// Login
 import LoginPage from "./pages/LoginPage.jsx";
 
-// Dashboard
 import DashboardPage from "./pages/DashboardPage.jsx";
-
-// Reports
 import ReportsPage from "./pages/ReportsPage.jsx";
 
-// Customer pages
 import CustomersPage from "./pages/CustomersPage.jsx";
 import NewCustomerPage from "./pages/NewCustomerPage.jsx";
 import CustomerDetailPage from "./pages/CustomerDetailPage.jsx";
 import EditCustomerPage from "./pages/EditCustomerPage.jsx";
 
-// Contract pages
 import ContractsPage from "./pages/ContractsPage.jsx";
 import NewContractPage from "./pages/NewContractPage.jsx";
 import ContractDetailPage from "./pages/ContractDetailPage.jsx";
 import EditContractPage from "./pages/EditContractPage.jsx";
 
 // =========================================================
-// API CONFIGURATION
+// LOCAL STORAGE KEYS
 // =========================================================
 
-// React:
-// http://localhost:5173
+const CUSTOMERS_STORAGE_KEY = "renewtrack-customers";
+const CONTRACTS_STORAGE_KEY = "renewtrack-contracts";
+
+// =========================================================
+// INITIAL CUSTOMER DATA
+// =========================================================
+
+// These customers appear when RenewTrack is opened
+// for the first time in a browser.
 //
-// json-server:
-// http://localhost:3001
-const API_BASE = "http://localhost:3001";
+// After that, changes are saved in localStorage.
+
+const initialCustomers = [
+  {
+    id: "1",
+    companyName: "ABC Pte Ltd",
+    contactPerson: "John Tan",
+    email: "john.tan@abc.com",
+    phone: "+65 6123 4567",
+  },
+  {
+    id: "2",
+    companyName: "XYZ Engineering",
+    contactPerson: "Sarah Lim",
+    email: "sarah.lim@xyz.com",
+    phone: "+65 6234 5678",
+  },
+  {
+    id: "3",
+    companyName: "DEF Solutions",
+    contactPerson: "Michael Lee",
+    email: "michael.lee@def.com",
+    phone: "+65 6345 6789",
+  },
+  {
+    id: "4",
+    companyName: "Sunrise Trading Pte Ltd",
+    contactPerson: "Emily Wong",
+    email: "emily.wong@sunrise.com",
+    phone: "+65 6456 7890",
+  },
+];
+
+// =========================================================
+// INITIAL CONTRACT DATA
+// =========================================================
+
+const initialContracts = [
+  {
+    id: "1",
+    customerId: "1",
+    customer: "ABC Pte Ltd",
+    contractName: "IT Maintenance Contract",
+    startDate: "2026-01-01",
+    expiryDate: "2026-12-31",
+    value: 24000,
+    status: "Active",
+  },
+  {
+    id: "2",
+    customerId: "2",
+    customer: "XYZ Engineering",
+    contractName: "Software Support Contract",
+    startDate: "2026-01-15",
+    expiryDate: "2027-01-15",
+    value: 18000,
+    status: "Expiring Soon",
+  },
+  {
+    id: "3",
+    customerId: "3",
+    customer: "DEF Solutions",
+    contractName: "Equipment Maintenance Contract",
+    startDate: "2026-03-01",
+    expiryDate: "2027-02-28",
+    value: 32000,
+    status: "Active",
+  },
+  {
+    id: "4",
+    customerId: "4",
+    customer: "Sunrise Trading Pte Ltd",
+    contractName: "Network Support Contract",
+    startDate: "2025-07-01",
+    expiryDate: "2026-06-30",
+    value: 12000,
+    status: "Expired",
+  },
+];
+
+// =========================================================
+// CREATE UNIQUE ID
+// =========================================================
+
+// json-server previously generated IDs for us.
+//
+// Because the deployment version does not use json-server,
+// we create an ID ourselves.
+
+const createId = () =>
+  `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
+// =========================================================
+// LOAD DATA FROM LOCAL STORAGE
+// =========================================================
+
+const loadStoredData = (key, initialData) => {
+  try {
+    // Look for previously saved data.
+    const storedData = localStorage.getItem(key);
+
+    // If nothing has been saved yet,
+    // use the initial sample data.
+    if (!storedData) {
+      return initialData;
+    }
+
+    // Convert the saved JSON string back into an array.
+    return JSON.parse(storedData);
+  } catch (error) {
+    console.error(
+      `Unable to load ${key} from localStorage:`,
+      error,
+    );
+
+    // If something is wrong with localStorage,
+    // fall back to the initial data.
+    return initialData;
+  }
+};
 
 // =========================================================
 // APP COMPONENT
@@ -74,220 +191,107 @@ const API_BASE = "http://localhost:3001";
 
 function App() {
   // =========================================================
-  // SHARED STATE
+  // CUSTOMER STATE
   // =========================================================
 
-  const [contracts, setContracts] = useState([]);
-
-  const [customers, setCustomers] = useState([]);
-
-  // =========================================================
-  // LOADING STATE
-  // =========================================================
-
-  const [customersLoading, setCustomersLoading] =
-    useState(true);
-
-  const [contractsLoading, setContractsLoading] =
-    useState(true);
+  const [customers, setCustomers] = useState(() =>
+    loadStoredData(
+      CUSTOMERS_STORAGE_KEY,
+      initialCustomers,
+    ),
+  );
 
   // =========================================================
-  // ERROR STATE
+  // CONTRACT STATE
   // =========================================================
 
-  const [customersError, setCustomersError] =
-    useState(null);
-
-  const [contractsError, setContractsError] =
-    useState(null);
+  const [contracts, setContracts] = useState(() =>
+    loadStoredData(
+      CONTRACTS_STORAGE_KEY,
+      initialContracts,
+    ),
+  );
 
   // =========================================================
-  // LOAD CUSTOMERS FROM API
+  // SAVE CUSTOMERS TO LOCAL STORAGE
+  // =========================================================
+
+  // Whenever the customers array changes,
+  // save the new version into the browser.
+
+  useEffect(() => {
+    localStorage.setItem(
+      CUSTOMERS_STORAGE_KEY,
+      JSON.stringify(customers),
+    );
+  }, [customers]);
+
+  // =========================================================
+  // SAVE CONTRACTS TO LOCAL STORAGE
   // =========================================================
 
   useEffect(() => {
-    const loadCustomers = async () => {
-      try {
-        // Request starting.
-        setCustomersLoading(true);
-
-        // Clear previous error.
-        setCustomersError(null);
-
-        // GET /customers
-        const response = await fetch(
-          `${API_BASE}/customers`,
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to load customers: ${response.status}`,
-          );
-        }
-
-        const data = await response.json();
-
-        setCustomers(data);
-      } catch (error) {
-        console.error(
-          "Error loading customers:",
-          error,
-        );
-
-        setCustomersError(
-          "Unable to load customers. Please try again later.",
-        );
-      } finally {
-        setCustomersLoading(false);
-      }
-    };
-
-    loadCustomers();
-  }, []);
-
-  // =========================================================
-  // LOAD CONTRACTS FROM API
-  // =========================================================
-
-  useEffect(() => {
-    const loadContracts = async () => {
-      try {
-        // Request starting.
-        setContractsLoading(true);
-
-        // Clear previous error.
-        setContractsError(null);
-
-        // GET /contracts
-        const response = await fetch(
-          `${API_BASE}/contracts`,
-        );
-
-        if (!response.ok) {
-          throw new Error(
-            `Failed to load contracts: ${response.status}`,
-          );
-        }
-
-        const data = await response.json();
-
-        setContracts(data);
-      } catch (error) {
-        console.error(
-          "Error loading contracts:",
-          error,
-        );
-
-        setContractsError(
-          "Unable to load contracts. Please try again later.",
-        );
-      } finally {
-        setContractsLoading(false);
-      }
-    };
-
-    loadContracts();
-  }, []);
+    localStorage.setItem(
+      CONTRACTS_STORAGE_KEY,
+      JSON.stringify(contracts),
+    );
+  }, [contracts]);
 
   // =========================================================
   // ADD CUSTOMER
   // =========================================================
 
   const addCustomer = async (newCustomer) => {
-    try {
-      const response = await fetch(
-        `${API_BASE}/customers`,
-        {
-          method: "POST",
+    const savedCustomer = {
+      ...newCustomer,
+      id: createId(),
+    };
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+    setCustomers((previousCustomers) => [
+      ...previousCustomers,
+      savedCustomer,
+    ]);
 
-          body: JSON.stringify(newCustomer),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to add customer: ${response.status}`,
-        );
-      }
-
-      // json-server returns the customer
-      // with its generated ID.
-      const savedCustomer =
-        await response.json();
-
-      // Update React state immediately.
-      setCustomers((previousCustomers) => [
-        ...previousCustomers,
-        savedCustomer,
-      ]);
-
-      // Return the saved record in case a page
-      // needs it later.
-      return savedCustomer;
-    } catch (error) {
-      console.error(
-        "Error adding customer:",
-        error,
-      );
-
-      throw error;
-    }
+    return savedCustomer;
   };
 
   // =========================================================
   // UPDATE CUSTOMER
   // =========================================================
 
-  const updateCustomer = async (
-    updatedCustomer,
-  ) => {
-    try {
-      const response = await fetch(
-        `${API_BASE}/customers/${updatedCustomer.id}`,
-        {
-          method: "PUT",
+  const updateCustomer = async (updatedCustomer) => {
+    // Update the customer record.
+    setCustomers((previousCustomers) =>
+      previousCustomers.map((customer) =>
+        String(customer.id) ===
+        String(updatedCustomer.id)
+          ? updatedCustomer
+          : customer,
+      ),
+    );
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+    // =======================================================
+    // UPDATE CUSTOMER NAME INSIDE CONTRACTS
+    // =======================================================
 
-          body: JSON.stringify(
-            updatedCustomer,
-          ),
-        },
-      );
+    // Contracts also store the customer's company name.
+    //
+    // If the company name changes, update any contracts
+    // belonging to that customer.
 
-      if (!response.ok) {
-        throw new Error(
-          `Failed to update customer: ${response.status}`,
-        );
-      }
+    setContracts((previousContracts) =>
+      previousContracts.map((contract) =>
+        String(contract.customerId) ===
+        String(updatedCustomer.id)
+          ? {
+              ...contract,
+              customer: updatedCustomer.companyName,
+            }
+          : contract,
+      ),
+    );
 
-      const savedCustomer =
-        await response.json();
-
-      setCustomers((previousCustomers) =>
-        previousCustomers.map((customer) =>
-          String(customer.id) ===
-          String(savedCustomer.id)
-            ? savedCustomer
-            : customer,
-        ),
-      );
-
-      return savedCustomer;
-    } catch (error) {
-      console.error(
-        "Error updating customer:",
-        error,
-      );
-
-      throw error;
-    }
+    return updatedCustomer;
   };
 
   // =========================================================
@@ -296,54 +300,31 @@ function App() {
 
   // BUSINESS RULE:
   //
-  // Customers can only be deleted when
-  // they have NO contracts.
+  // A customer can only be deleted if that customer
+  // has no contracts.
+
   const deleteCustomer = async (customerId) => {
-    try {
-      // Check whether any contract belongs
-      // to this customer.
-      const hasContracts = contracts.some(
-        (contract) =>
-          String(contract.customerId) ===
-          String(customerId),
-      );
+    const hasContracts = contracts.some(
+      (contract) =>
+        String(contract.customerId) ===
+        String(customerId),
+    );
 
-      if (hasContracts) {
-        console.error(
-          "Customer cannot be deleted because contracts exist.",
-        );
-
-        return;
-      }
-
-      const response = await fetch(
-        `${API_BASE}/customers/${customerId}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to delete customer: ${response.status}`,
-        );
-      }
-
-      // Remove the deleted customer
-      // from React state.
-      setCustomers((previousCustomers) =>
-        previousCustomers.filter(
-          (customer) =>
-            String(customer.id) !==
-            String(customerId),
-        ),
-      );
-    } catch (error) {
+    if (hasContracts) {
       console.error(
-        "Error deleting customer:",
-        error,
+        "Customer cannot be deleted because contracts exist.",
       );
+
+      return;
     }
+
+    setCustomers((previousCustomers) =>
+      previousCustomers.filter(
+        (customer) =>
+          String(customer.id) !==
+          String(customerId),
+      ),
+    );
   };
 
   // =========================================================
@@ -351,96 +332,34 @@ function App() {
   // =========================================================
 
   const addContract = async (newContract) => {
-    try {
-      const response = await fetch(
-        `${API_BASE}/contracts`,
-        {
-          method: "POST",
+    const savedContract = {
+      ...newContract,
+      id: createId(),
+    };
 
-          headers: {
-            "Content-Type": "application/json",
-          },
+    setContracts((previousContracts) => [
+      ...previousContracts,
+      savedContract,
+    ]);
 
-          body: JSON.stringify(newContract),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to add contract: ${response.status}`,
-        );
-      }
-
-      const savedContract =
-        await response.json();
-
-      // Update React state immediately.
-      setContracts((previousContracts) => [
-        ...previousContracts,
-        savedContract,
-      ]);
-
-      return savedContract;
-    } catch (error) {
-      console.error(
-        "Error adding contract:",
-        error,
-      );
-
-      throw error;
-    }
+    return savedContract;
   };
 
   // =========================================================
   // UPDATE CONTRACT
   // =========================================================
 
-  const updateContract = async (
-    updatedContract,
-  ) => {
-    try {
-      const response = await fetch(
-        `${API_BASE}/contracts/${updatedContract.id}`,
-        {
-          method: "PUT",
+  const updateContract = async (updatedContract) => {
+    setContracts((previousContracts) =>
+      previousContracts.map((contract) =>
+        String(contract.id) ===
+        String(updatedContract.id)
+          ? updatedContract
+          : contract,
+      ),
+    );
 
-          headers: {
-            "Content-Type": "application/json",
-          },
-
-          body: JSON.stringify(
-            updatedContract,
-          ),
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error(
-          `Failed to update contract: ${response.status}`,
-        );
-      }
-
-      const savedContract =
-        await response.json();
-
-      setContracts((previousContracts) =>
-        previousContracts.map((contract) =>
-          String(contract.id) ===
-          String(savedContract.id)
-            ? savedContract
-            : contract,
-        ),
-      );
-
-      return savedContract;
-    } catch (error) {
-      console.error(
-        "Error updating contract:",
-        error,
-      );
-
-      throw error;
-    }
+    return updatedContract;
   };
 
   // =========================================================
@@ -448,18 +367,13 @@ function App() {
   // =========================================================
 
   /*
-    Contracts cannot be deleted.
+    RenewTrack intentionally does not allow
+    contracts to be deleted.
 
-    This applies to:
-    - Active contracts
-    - Expiring Soon contracts
-    - Expired contracts
+    Active, Expiring Soon and Expired contracts
+    are retained as historical business records.
 
-    Contracts are retained as historical
-    business records.
-
-    Therefore RenewTrack intentionally does
-    NOT have a deleteContract function.
+    Therefore there is no deleteContract function.
   */
 
   // =========================================================
@@ -468,13 +382,15 @@ function App() {
 
   return (
     <AuthProvider>
-      <BrowserRouter>
+      {/* HashRouter is used because this deployment
+          will be hosted using GitHub Pages. */}
+
+      <HashRouter>
         <Routes>
           {/* =================================================
-              PUBLIC ROUTES
+              LOGIN
               ================================================= */}
 
-          {/* Login does NOT require authentication. */}
           <Route
             path="/login"
             element={<LoginPage />}
@@ -484,12 +400,6 @@ function App() {
               HOME
               ================================================= */}
 
-          {/* Visiting "/" sends the user to Dashboard.
-
-              ProtectedRoute will then decide whether
-              the user can access Dashboard or should
-              be redirected to Login.
-          */}
           <Route
             path="/"
             element={
@@ -504,17 +414,7 @@ function App() {
               PROTECTED ROUTES
               ================================================= */}
 
-          {/* Everything inside this route requires
-              a logged-in user.
-          */}
           <Route element={<ProtectedRoute />}>
-            {/* ===============================================
-                ROOT LAYOUT
-                =============================================== */}
-
-            {/* Sidebar and user bar stay visible for
-                all protected pages.
-            */}
             <Route element={<RootLayout />}>
               {/* =============================================
                   DASHBOARD
@@ -556,17 +456,13 @@ function App() {
                     deleteCustomer={
                       deleteCustomer
                     }
-                    loading={
-                      customersLoading
-                    }
-                    error={customersError}
+                    loading={false}
+                    error={null}
                   />
                 }
               />
 
-              {/* =============================================
-                  ADD CUSTOMER
-                  ============================================= */}
+              {/* ADD CUSTOMER */}
 
               <Route
                 path="/customers/new"
@@ -577,9 +473,7 @@ function App() {
                 }
               />
 
-              {/* =============================================
-                  VIEW CUSTOMER
-                  ============================================= */}
+              {/* VIEW CUSTOMER */}
 
               <Route
                 path="/customers/:customerId"
@@ -591,9 +485,7 @@ function App() {
                 }
               />
 
-              {/* =============================================
-                  EDIT CUSTOMER
-                  ============================================= */}
+              {/* EDIT CUSTOMER */}
 
               <Route
                 path="/customers/:customerId/edit"
@@ -616,17 +508,13 @@ function App() {
                 element={
                   <ContractsPage
                     contracts={contracts}
-                    loading={
-                      contractsLoading
-                    }
-                    error={contractsError}
+                    loading={false}
+                    error={null}
                   />
                 }
               />
 
-              {/* =============================================
-                  ADD CONTRACT
-                  ============================================= */}
+              {/* ADD CONTRACT */}
 
               <Route
                 path="/contracts/new"
@@ -638,9 +526,7 @@ function App() {
                 }
               />
 
-              {/* =============================================
-                  VIEW CONTRACT
-                  ============================================= */}
+              {/* VIEW CONTRACT */}
 
               <Route
                 path="/contracts/:contractId"
@@ -651,9 +537,7 @@ function App() {
                 }
               />
 
-              {/* =============================================
-                  EDIT CONTRACT
-                  ============================================= */}
+              {/* EDIT CONTRACT */}
 
               <Route
                 path="/contracts/:contractId/edit"
@@ -674,7 +558,6 @@ function App() {
               UNKNOWN ROUTE
               ================================================= */}
 
-          {/* Any unknown URL returns to Dashboard. */}
           <Route
             path="*"
             element={
@@ -685,7 +568,7 @@ function App() {
             }
           />
         </Routes>
-      </BrowserRouter>
+      </HashRouter>
     </AuthProvider>
   );
 }

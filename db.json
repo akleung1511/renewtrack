@@ -28,9 +28,7 @@
       "email": "emily.wong@sunrise.com",
       "phone": "+65 6456 7890"
     }
-    
   ],
-
   "contracts": [
     {
       "id": "1",
@@ -72,8 +70,5 @@
       "value": 12000,
       "status": "Expired"
     }
-    
-      ]
-  
-
+  ]
 }
